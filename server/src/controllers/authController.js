@@ -1,0 +1,245 @@
+const otpModel = require("../models/otpModel");
+const userModel = require("../models/userModel");
+const profileModel = require("../models/profileModel");
+const {
+  isValid,
+  isValidEmail,
+  isValidName,
+  isValidPassword,
+} = require("../utils/validator");
+const otpGenerator = require("otp-generator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookie = require("cookie-parser");
+
+// send otp
+const sendOtp = async (req, res) => {
+  try {
+    //fetch email from req body
+    let { email } = req.body;
+
+    // validate email
+    if (!isValid) {
+      return res.status(400).json({ success: false, msg: "email is required" });
+    }
+    if (!isValidEmail) {
+      return res.status(400).json({ success: false, msg: "email is invalid" });
+    }
+
+    // check if user already exist
+    const userExist = await userModel.findOne({ email });
+    if (userExist) {
+      return res.status(409).json({
+        success: false,
+        msg: "User already registered",
+      });
+    }
+
+    // generate otp
+    let otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    console.log("otp generated : ", otp);
+
+    //check otp unique or not
+    let result = await otpModel.findOne({ otp: otp });
+
+    while (result) {
+      let otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        lowerCaseAlphabets: false,
+        specialChars: false,
+      });
+
+      result = await otpModel.findOne({ otp: otp });
+    }
+
+    // create otp in db
+    let otpCreate = await otpModel.create({ email, otp });
+    console.log(otpCreate);
+
+    return res.status(200).json({ msg: "Otp sent successfully", otpCreate });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      msg: "Otp can not send, please try again",
+    });
+  }
+};
+
+// signup
+const signUp = async (req, res) => {
+  try {
+    //request data from req body
+    let {
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      accountType,
+      otp,
+    } = req.body;
+    //validate
+    if (!isValid(firstName) || !isValidName(firstName)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "first name is required or invalid" });
+    }
+
+    if (!isValid(lastName) || !isValidName(lastName)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "last name is required or invalid" });
+    }
+
+    if (!isValid(email) || !isValidEmail(email)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "email is required or invalid" });
+    }
+
+    if (!isValid(password) || !isValidPassword(password)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "password is required or invalid" });
+    }
+    if (!isValid(confirmPassword) || !isValidPassword(confirmPassword)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "password is required or invalid" });
+    }
+
+    if (!isValid(accountType)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid account Type" });
+    }
+
+    //check 2 password
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "password and confirmPassword is not match",
+      });
+    }
+    //check user already exist or not
+    let userExist = await userModel.findOne({ email });
+    if (userExist) {
+      return res
+        .status(409)
+        .json({ success: false, msg: "user already register" });
+    }
+
+    //find most recent otp stored in db
+    const recentOtp = await otpModel
+      .find({ email })
+      .sort({ createdAt: -1 })
+      .limit(1);
+    console.log(recentOtp);
+
+    //validate otp
+    if (recentOtp.length == 0) {
+      return res.status(404).json({ success: false, msg: "otp not found" });
+    }
+
+    if (otp !== recentOtp) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Enter otp is not correct" });
+    }
+    //hash password
+    let hashPassword = await bcrypt.hash(password, 10);
+
+    const profile = await profileModel.create({
+      gender: null,
+      dateOfBirth: null,
+      about: null,
+      contactNumber: null,
+    });
+
+    //signup entry create in db
+    const user = await userModel.create({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+      confirmPassword,
+      accountType: profile._id,
+      image: `https://api.dicebear.com/9.x/initials/svg?seed=${firstName} ${lastName}`,
+    });
+
+    // send response
+    return res
+      .status(201)
+      .json({ success: false, msg: "user signUp successfully", user });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        msg: "user cannot be registered, please try again letter",
+      });
+  }
+};
+
+// login
+const login = async (req, res) => {
+  try {
+    //data fetch for req body
+    let { email, password } = req.body;
+
+    //validate data
+    if (!isValid(email) || !isValidEmail(email)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "email is required or invalid" });
+    }
+
+    //check user exist or not
+    const user = await userModel
+      .findOne({ email })
+      .populate("additionalDetails");
+    if (!user) {
+      return res.status(404).json({ msg: "user not found" });
+    }
+    //check password match and generate jwt token
+    if (await bcrypt.compare(password, user.password)) {
+      let payload = {
+        email: user.email,
+        id: user._id,
+        role: user.accountType,
+      };
+      let token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
+      user.token = token;
+
+      //creat cookie and send response
+      let options = {
+        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+      };
+      return res
+        .cookie("token", token, options)
+        .status(200)
+        .json({ success: true, msg: "user login successfully", user, token });
+    }else{
+      return res.status(400).json({success:false,msg:"Wrong password entered"});
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({success:false,
+      msg:"error in Login"
+    })
+    
+  }
+};
+// change password
+
+module.exports = { sendOtp, signUp,login };
