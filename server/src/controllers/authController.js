@@ -213,7 +213,7 @@ const login = async (req, res) => {
       let payload = {
         email: user.email,
         id: user._id,
-        role: user.accountType,
+        accountType: user.accountType,
       };
       let token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "24h",
@@ -240,6 +240,14 @@ const login = async (req, res) => {
     
   }
 };
-// change password
 
-module.exports = { sendOtp, signUp,login };
+// change password
+const changePassword = async(req,res)=>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
+
+module.exports = { sendOtp, signUp,login,changePassword };
