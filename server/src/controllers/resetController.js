@@ -29,7 +29,7 @@ const resetPasswordToken = async (req, res) => {
     // update user by adding token and expiration time
     const updatedDetails = await userModel.findOneAndUpdate(
       { email },
-      { token: token, resetPasswordExpires: Date.now(3 * 60 * 1000) },
+      { token: token, resetPasswordExpires: Date.now() + 3 * 60 * 1000 },
       { new: true },
     );
 
