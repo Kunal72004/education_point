@@ -1,6 +1,7 @@
-const tagModel = require('../models/tagModel');
+const categoryModel = require('../models/categoryModel');
 const {isValid, isValidName} = require('../utils/validator')
-const creatTag = async(req,res)=>{
+
+const createCategory = async(req,res)=>{
     try {
         // data fetch req body
         let {name,description} = req.body;
@@ -11,25 +12,25 @@ const creatTag = async(req,res)=>{
         }
 
         if(!isValid(description)){
-            return res.status(400).json({success:false,msg:"Name is required or invalid"});
+            return res.status(400).json({success:false,msg:"description is required or invalid"});
         }
 
-        const createTag = await tagModel.create({name,description});
-        return res.status(201).json({success:true,msg:"Tag created successfully",createTag});
+        const newCategory = await categoryModel.create({name,description});
+        return res.status(201).json({success:true,msg:"Tag created successfully",newCategory});
     } catch (error) {
         console.log(error);
         return res.status(500).json({success:false,msg:"something went wrong while creating tag"});
     }
 }
 
-const getAllTags = async(req,res)=>{
+const getAllCategory = async(req,res)=>{
     try {
-        const allTag = await tagModel.find({},{name:true,description:true});
-        return res.status(200).json({success:true,msg:"getting all successfully",allTag});
+        const allCategory = await categoryModel.find({},{name:true,description:true});
+        return res.status(200).json({success:true,msg:"getting all successfully",allCategory});
     } catch (error) {
         console.log(error);
         return res.status(500).json({success:false,msg:"something went wrong while geting all tag"});
     }
 }
 
-module.exports = {creatTag,getAllTags}
+module.exports = {createCategory,getAllCategory}

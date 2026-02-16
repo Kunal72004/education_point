@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
 const userModel = require('../models/userModel');
-const tagModel = require('../models/tagModel');
+const categoryModel = require('../models/categoryModel');
 const courseModel = require('../models/courseModel');
-const uploadImage = require('../utils/uploadImage');
 const {isValid, isValidName} = require('../utils/validator');
-const { default: mongoose } = require('mongoose');
-const uploadImage = require('../utils/uploadImage');
+const mongoose = require('mongoose');
+const uploadToCloudinary = require('../utils/uploadCloudinary');
 
 const createCourse = async(req,res)=>{
     try {
         //data fetch
-        let {courseName,courseDescription,whatYouWillLearn,price,tag} = req.body;
+        let {courseName,courseDescription,whatYouWillLearn,price,tag,category} = req.body;
 
         //get thumbnail
         let thumbnail = req.files.thumbnailImage;
@@ -29,8 +28,11 @@ const createCourse = async(req,res)=>{
         if(!isValid(price) && typeof price !== 'number' && price<0){
             return res.status(400).json({success:false,msg:"price is required or invalid price"})
         }
-        if(!mongoose.Schema.Types.ObjectId.isValid(tag)){
-            return res.status(400).json({success:false,msg:"Invalid tag id "});
+        if(!isValid(tag)){
+             return res.status(400).json({success:false, msg:"tag is required or invalid"});
+        }
+        if(!mongoose.Schema.Types.ObjectId.isValid(category)){
+            return res.status(400).json({success:false,msg:"Invalid category id "});
         }
         //get userId from storing data in request by decoding the token
         const userId = req.user.id;
@@ -51,14 +53,14 @@ const createCourse = async(req,res)=>{
         }
 
         // check tag is valid or not 
-        const tagDetails = await tagModel.findById(tag);
+        const categoryDetails = await categoryModel.findById(category);
 
-        if(!tagDetails){
-            return res.status(404).json({success:false, msg:"tag is not found"});
+        if(!categoryDetails){
+            return res.status(404).json({success:false, msg:"category is not found"});
         }
 
         //upload image to cloudinary
-        const thumbnailImage = await uploadImage(thumbnail,process.env.FOLDER_NAME);
+        const thumbnailImage = await uploadToCloudinary(thumbnail,process.env.FOLDER_NAME);
 
         const newCourse = await courseModel.create({
             courseName,
@@ -66,8 +68,9 @@ const createCourse = async(req,res)=>{
             instructor:instructorDetails._id,
             whatYouWillLearn,
             price,
-            tag:tagDetails._id,
+            category:categoryDetails._id,
             thumbnail:thumbnailImage.secure_url,
+            tag
         })
 
         //add new course to the user schema to instructor
@@ -81,7 +84,7 @@ const createCourse = async(req,res)=>{
         );
         
         //add new course to th tag schema
-         await tagModel.findByIdAndUpdate({_id:tagDetails._id},
+         await categoryModel.findByIdAndUpdate({_id:categoryDetails._id},
             {
                 $push:{
                     course:newCourse._id
@@ -100,5 +103,22 @@ const createCourse = async(req,res)=>{
     }
 }
 
+const showAllCourses = async(req,res)=>{
+    try {
+        const allCourses = await courseModel.find({},{
+            courseName:true,
+            price:true,
+            thumbnail:true,
+            instructor:true,
+            ratingAndReviews:true,
+            studentsEnrolled:true,
+        }).populate("instructor").exec();
+        return res.status(200).json({success:true,msg:"Data for all course fetched successfully",data:allCourses});
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({success:false,msg:"something went wrong while fetching all courses"});
+        
+    }
+}
 
-module.exports = {createCourse};
+module.exports = {createCourse,showAllCourses};
