@@ -121,4 +121,34 @@ const showAllCourses = async(req,res)=>{
     }
 }
 
-module.exports = {createCourse,showAllCourses};
+const getCourse = async(req,res)=>{
+  try {
+     //get id 
+        let {courseId} = req.params;
+    
+        //validate
+        if(!mongoose.Schema.Types.ObjectId.isValid(courseId)){
+          return res.status(400).json({success:false,msg:"Invalid course id"});
+        }
+    
+        //get course
+        const course = await courseModel.findById(courseId).populate({
+            path:"courseContent",
+            populate:{
+                path:"subSection",
+            }
+        }).lean();
+        if(!course){
+          return res.status(404).json({success:false,msg:"course is not found "});
+        }
+        //return res
+        return res.status(200).json({success:true,msg:"fetched course successfully",course});
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({success:false,msg:"something went wrong, while getting Course"});
+    
+  }
+}
+
+module.exports = {createCourse,showAllCourses,getCourse};

@@ -142,4 +142,28 @@ const deleteSection = async(req,res)=>{
     }
 }
 
-module.exports = { createSubsection,updateSection,deleteSection };
+const getSubSection = async(req,res)=>{
+  try {
+     //get id 
+        let {subSectionId} = req.params;
+    
+        //validate
+        if(!mongoose.Schema.Types.ObjectId.isValid(subSectionId)){
+          return res.status(400).json({success:false,msg:"Invalid sub section id"});
+        }
+    
+        //get sub section
+        const subSection = await subSectionModel.findById(subSectionId).populate({path:""});
+        if(!subSection){
+          return res.status(404).json({success:false,msg:"sub section is not found "});
+        }
+        //return res
+        return res.status(200).json({success:true,msg:"fetched sub section successfully",subSection});
+
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({success:false,msg:"something went wrong, while getting sub section"});
+    
+  }
+}
+module.exports = { createSubsection,updateSection,deleteSection ,getSubSection};

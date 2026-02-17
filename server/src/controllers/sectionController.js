@@ -91,4 +91,29 @@ const deleteSection = async(req,res)=>{
         return res.status(500).json({success:false,msg:"something went wrong , while deleting section"});
     }
 }
-module.exports = { createSection,updateSection ,deleteSection};
+
+const getSection = async(req,res)=>{
+  try {
+    //get id 
+    let {sectionId} = req.params;
+
+    //validate
+    if(!mongoose.Schema.Types.ObjectId.isValid(sectionId)){
+      return res.status(400).json({success:false,msg:"Invalid section id"});
+    }
+
+    //get section
+    const section = await sectionModel.findById(sectionId);
+    if(!section){
+      return res.status(404).json({success:false,msg:"section is not found "});
+    }
+    //return res
+    return res.status(200).json({success:true,msg:"fetched section successfully",section});
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({success:false,msg:"something went wrong, while getting the section"})
+    
+  }
+}
+
+module.exports = { createSection,updateSection ,deleteSection,getSection};
