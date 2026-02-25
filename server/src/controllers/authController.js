@@ -10,7 +10,10 @@ const {
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const cookie = require("cookie-parser");
+const sendMail = require("../utils/sendMail");
+const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 
 // send otp
 const sendOtp = async (req, res) => {
@@ -179,12 +182,10 @@ const signUp = async (req, res) => {
       .json({ success: false, msg: "user signUp successfully", user });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        msg: "user cannot be registered, please try again letter",
-      });
+    return res.status(500).json({
+      success: false,
+      msg: "user cannot be registered, please try again letter",
+    });
   }
 };
 
@@ -229,25 +230,89 @@ const login = async (req, res) => {
         .cookie("token", token, options)
         .status(200)
         .json({ success: true, msg: "user login successfully", user, token });
-    }else{
-      return res.status(400).json({success:false,msg:"Wrong password entered"});
+    } else {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Wrong password entered" });
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({success:false,
-      msg:"error in Login"
-    })
-    
+    return res.status(500).json({ success: false, msg: "error in Login" });
   }
 };
 
 // change password
-const changePassword = async(req,res)=>{
+const changePassword = async (req, res) => {
   try {
-    
-  } catch (error) {
-    
-  }
-}
+    //get data
+    let { oldPassword, newPassword } = req.body;
+    let userId = req.user.id;
 
-module.exports = { sendOtp, signUp,login,changePassword };
+    //validate
+    if (!mongoose.Schema.Types.ObjectId.isValid(userId)){
+      return res.status(400).json({success:false,msg:"invalid user id"});
+    }
+    if (!isValid(oldPassword) || !isValidPassword(oldPassword)) {
+      return res.status(400).json({ success: false, msg: "Invalid password" });
+    }
+    if (!isValid(newPassword) || !isValidPassword(newPassword)) {
+      return res
+        .status(400)
+        .json({ success: false, msg: "Invalid newPassword" });
+    }
+
+    //get user
+    const userDetaitl = await userModel.findById(userId);
+
+    //validate old password
+    const isPasswordMatch = await bcrypt.compare(
+      oldPassword,
+      userDetaitl.password,
+    );
+    if (!isPasswordMatch) {
+      return res
+        .status(401)
+        .json({ succes: false, msg: "password is incorrect" });
+    }
+
+    //update password
+    const encryptedPassword = await bcrypt.hash(newPassword, 10);
+    const updatedUserDetail = await userModel.findByIdAndUpdate(
+      userId,
+      { password: encryptedPassword },
+      { new: true },
+    );
+
+    //send email
+    try {
+      const emailResponse = await sendMail(
+        userDetaitl.email,
+        "Password for your account has been updated",
+        passwordUpdated(
+          updatedUserDetail.email,
+          `Password updated successfully for ${updatedUserDetail.firstName} ${updatedUserDetail.lastName}`,
+        ),
+      );
+      console.log("Email send successfully: ", emailResponse.response);
+    } catch (error) {
+      // if there's an error sending the email, log the error and return a error
+      console.log("error occured while sending the sending eamil", error);
+      return res
+        .status(500)
+        .json({ success: false, msg: "error occured while sending email" });
+    }
+
+    //return success response
+    return res.status(200).json({success:true,msg:"password updated successfully"})
+  } catch (error) {
+// If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
+    console.error("Error occurred while updating password:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred while updating password",
+      error: error.message,
+    })
+  }
+};
+
+module.exports = { sendOtp, signUp, login, changePassword };
