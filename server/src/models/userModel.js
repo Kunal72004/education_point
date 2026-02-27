@@ -1,65 +1,73 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema({
-    firstName : {
-        type:String,
-        required:true,
-        trim:true
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    lastName:{
-        type:String,
-        required:true,
-        trim:true
+    lastName: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    email:{
-        type:String,
-        required:true,
-        trim:true,
+    email: {
+      type: String,
+      required: true,
+      trim: true,
     },
-    password:{
-        type:String,
-        required:true,
-        trim:true,
-        select:false
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      select: false,
     },
-    accountType:{
-        type:String,
-        enum:["Admin","Student","Instructor"],
-        required:true
+    accountType: {
+      type: String,
+      enum: ["Admin", "Student", "Instructor"],
+      required: true,
     },
-    additionalDetails:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Profile',
-        required:true
+    active: {
+      type: Boolean,
+      default: true,
     },
-    courses:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Course',
-        }
+    approved: {
+      type: Boolean,
+      default: true,
+    },
+    additionalDetails: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Profile",
+      required: true,
+    },
+    courses: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course",
+      },
     ],
-    image:{
-        type:String,
-        trim:true,
+    image: {
+      type: String,
+      trim: true,
     },
-    token:{
-        type:String,
+    token: {
+      type: String,
     },
-    resetPasswordExpires:{
-        type:Date
+    resetPasswordExpires: {
+      type: Date,
     },
-    courseProgress:[
-        {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:"CourseProgress"
-        }
-    ]
+    courseProgress: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CourseProgress",
+      },
+    ],
+  },
+  { timestamps: true },
+);
 
-},{timestamps:true})
-
-module.exports = mongoose.model("User",userSchema);
-
-
+module.exports = mongoose.model("User", userSchema);
 
 // Define the user schema using the Mongoose Schema constructor
 // const userSchema = new mongoose.Schema(
