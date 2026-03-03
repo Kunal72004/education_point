@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const { isValid } = require("../utils/validator");
 const uploadToCloudinary = require("../utils/uploadCloudinary");
 
-const createSubsection = async (req, res) => {
+const addSubsection = async (req, res) => {
   try {
     //fetch data from req body
     let { sectionId, title, timeDuration, description } = req.body;
@@ -75,7 +75,7 @@ const createSubsection = async (req, res) => {
   }
 };
 
-const updateSection = async(req,res)=>{
+const updateSubSection = async(req,res)=>{
     try {
         //fetch data 
         let { subSectionId, title, timeDuration, description } = req.body;
@@ -119,7 +119,7 @@ const updateSection = async(req,res)=>{
     }
 }
 
-const deleteSection = async(req,res)=>{
+const deleteSubSection = async(req,res)=>{
     try {
         //get id of subsection
         let {subSectionId} = req.params;
@@ -166,4 +166,4 @@ const getSubSection = async(req,res)=>{
     
   }
 }
-module.exports = { createSubsection,updateSection,deleteSection ,getSubSection};
+module.exports = { addSubsection,updateSubSection,deleteSubSection ,getSubSection};

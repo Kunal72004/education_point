@@ -3,7 +3,7 @@ const courseModel = require("../models/courseModel");
 const sectionModel = require("../models/sectionModel");
 const { isValid } = require("../utils/validator");
 
-const createSection = async (req, res) => {
+const addSection = async (req, res) => {
   try {
     //data fetch
     let { sectionName, courseId } = req.body;
@@ -39,11 +39,11 @@ const createSection = async (req, res) => {
     //return response
     return res.status(201).json({
         success:true,
-        message:"Section created successfully",
+        message:"Section added successfully",
         data:updatedCourseDetail
     })
   } catch (error) {
-    return res.status(500).json({success:false,msg:"something went wrong ,while creating section"});
+    return res.status(500).json({success:false,msg:"something went wrong ,while adding section"});
   }
 };
 
@@ -76,7 +76,7 @@ const updateSection = async(req,res)=>{
 const deleteSection = async(req,res)=>{
     try {
         //get id
-        let {sectionId} = req.params;
+        let {sectionId} = req.body;
 
         //validate section id
         if(!mongoose.Schema.Types.ObjectId.isValid(sectionId));
@@ -116,4 +116,4 @@ const getSection = async(req,res)=>{
   }
 }
 
-module.exports = { createSection,updateSection ,deleteSection,getSection};
+module.exports = { addSection,updateSection ,deleteSection,getSection};

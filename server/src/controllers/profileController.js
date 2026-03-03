@@ -104,7 +104,7 @@ const deletAccount = async(req,res)=>{
     }
 }
 
-const getProfile = async(req,res)=>{
+const getUserDetails = async(req,res)=>{
     try {
         //get id
         const id = req.user.id;
@@ -120,4 +120,4 @@ const getProfile = async(req,res)=>{
     }
 }
 
-module.exports = { updateProfile,deletAccount ,getProfile};
+module.exports = { updateProfile,deletAccount ,getUserDetails};

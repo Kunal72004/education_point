@@ -3,7 +3,6 @@ const userModel = require("../models/userModel");
 const categoryModel = require("../models/categoryModel");
 const courseModel = require("../models/courseModel");
 const { isValid, isValidName } = require("../utils/validator");
-const mongoose = require("mongoose");
 const uploadToCloudinary = require("../utils/uploadCloudinary");
 
 const createCourse = async (req, res) => {
@@ -141,7 +140,7 @@ const createCourse = async (req, res) => {
   }
 };
 
-const showAllCourses = async (req, res) => {
+const getAllCourses = async (req, res) => {
   try {
     const allCourses = await courseModel
       .find(
@@ -171,7 +170,7 @@ const showAllCourses = async (req, res) => {
   }
 };
 
-const getCourse = async (req, res) => {
+const getCourseDetails = async (req, res) => {
   try {
     //get id
     let { courseId } = req.body;
@@ -215,4 +214,4 @@ const getCourse = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, showAllCourses, getCourse };
+module.exports = { createCourse, getAllCourses, getCourseDetails };
