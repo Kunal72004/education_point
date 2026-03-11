@@ -56,6 +56,8 @@ const isInstructor = async(req,res,next)=>{
 //Authorization (isAdmin)
 const isAdmin = async(req,res,next)=>{
     try {
+        console.log(req.user.accountType);
+        
         if(req.user.accountType !== "Admin"){
             return res.status(401).json({success:false, msg:"This is a procted route for Admin only"})
         }

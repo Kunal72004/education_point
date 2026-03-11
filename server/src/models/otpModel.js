@@ -1,38 +1,55 @@
-const mongoose = require('mongoose');
-const sendMail = require('../utils/sendMail');
-const emailTemplate = require('../mail/templates/emailVerificationTemplate');
+const mongoose = require("mongoose");
+const mailSender = require("../utils/sendMail");
+const emailTemplate =
+  require("../mail/templates/emailVerificationTemplate");
 const otpSchema = new mongoose.Schema({
-    email:{
-        type:String,
-        required:true,
-        trim:true
-    },
-    otp:{
-        type:String,
-        required:true,
-        trim:true
-    },
-    createdAt:{
-        type:Date,
-        default:Date.now,
-        expires:60*5
-    }
-})
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  otp: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    expires: 60 * 5,
+  },
+});
 
-async function sendEmailVerification(email,otp){
-    try {
-        let response = await sendMail(email,"Verification Email",emailTemplate(otp));
-        console.log("email sent successfully",response);;
-    } catch (error) {
-        console.log("Error occured while sending mail",error);
-        throw error;        
-    }
-    
+// Define a function to send emails
+async function sendVerificationEmail(email, otp) {
+	// Create a transporter to send emails
+
+	// Define the email options
+
+	// Send the email
+	try {
+		const mailResponse = await mailSender(
+			email,
+			"Verification Email",
+			emailTemplate(otp)
+		);
+		console.log("Email sent successfully: ", mailResponse.response);
+	} catch (error) {
+		console.log("Error occurred while sending email: ", error);
+		throw error;
+	}
 }
 
-otpSchema.pre("save",async function(next){
-    await sendEmailVerification(this.email,this.otp);
-    next();
-})
+// Define a post-save hook to send email after the document has been saved
+otpSchema.pre("save", async function () {
+	console.log("New document saved to database");
 
-module.exports = mongoose.model("Otp",otpSchema);
+	// Only send an email when a new document is created
+	if (this.isNew) {
+		await sendVerificationEmail(this.email, this.otp);
+	}
+});
+
+const OTP = mongoose.model("OTP", otpSchema);
+
+module.exports = OTP;

@@ -14,7 +14,7 @@ const addSection = async (req, res) => {
         .status(400)
         .json({ success: false, msg: "section name is required" });
     }
-    if (!mongoose.Schema.Types.ObjectId.isValid(courseId)) {
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ success: false, msg: "Invalid course Id" });
     }
 
@@ -43,7 +43,7 @@ const addSection = async (req, res) => {
         data:updatedCourseDetail
     })
   } catch (error) {
-    return res.status(500).json({success:false,msg:"something went wrong ,while adding section"});
+    return res.status(500).json({success:false,msg:"something went wrong ,while adding section",error:error.message});
   }
 };
 
@@ -54,11 +54,11 @@ const updateSection = async(req,res)=>{
         let {sectionName,sectionId} = req.body;
 
         //data validation
-        if(!isValid(sectionName) || !isValidName(sectionName)){
+        if(!isValid(sectionName)){
             return res.status(400).json({success:false, msg:"section Name is required or invalid"});
         }
 
-        if(!mongoose.Schema.Types.ObjectId.isValid(sectionId)){
+        if(!mongoose.Types.ObjectId.isValid(sectionId)){
             return res.status(400).json({success:false , msg:"Invalid section id"});
         }
         //update data
@@ -79,7 +79,7 @@ const deleteSection = async(req,res)=>{
         let {sectionId} = req.body;
 
         //validate section id
-        if(!mongoose.Schema.Types.ObjectId.isValid(sectionId));
+        if(!mongoose.Types.ObjectId.isValid(sectionId));
 
         // use findByid and delete
         await sectionModel.findByIdAndDelete(sectionId);

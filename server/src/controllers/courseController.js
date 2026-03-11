@@ -48,14 +48,14 @@ const createCourse = async (req, res) => {
         .status(400)
         .json({ success: false, msg: "tag is required or invalid" });
     }
-    if (!mongoose.Schema.Types.ObjectId.isValid(category)) {
+    if (!mongoose.Types.ObjectId.isValid(category)) {
       return res
         .status(400)
         .json({ success: false, msg: "Invalid category id " });
     }
     //get userId from storing data in request by decoding the token
     const userId = req.user.id;
-    if (!mongoose.Schema.Types.ObjectId.isValid(userId)) {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res
         .status(401)
         .json({ success: false, msg: "invalid instructor id " });
@@ -176,7 +176,7 @@ const getCourseDetails = async (req, res) => {
     let { courseId } = req.body;
 
     //validate
-    if (!mongoose.Schema.Types.ObjectId.isValid(courseId)) {
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
       return res.status(400).json({ success: false, msg: "Invalid course id" });
     }
 

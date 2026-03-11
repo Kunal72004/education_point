@@ -16,64 +16,52 @@ const sendMail = require("../utils/sendMail");
 const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 
 // send otp
+// Send OTP For Email Verification
 const sendOtp = async (req, res) => {
   try {
-    //fetch email from req body
-    let { email } = req.body;
+    const { email } = req.body
 
-    // validate email
-    if (!isValid) {
-      return res.status(400).json({ success: false, msg: "email is required" });
-    }
-    if (!isValidEmail) {
-      return res.status(400).json({ success: false, msg: "email is invalid" });
-    }
+    // Check if user is already present
+    // Find user with provided email
+    const checkUserPresent = await userModel.findOne({ email })
+    // to be used in case of signup
 
-    // check if user already exist
-    const userExist = await userModel.findOne({ email });
-    if (userExist) {
-      return res.status(409).json({
+    // If user found with provided email
+    if (checkUserPresent) {
+      // Return 401 Unauthorized status code with error message
+      return res.status(401).json({
         success: false,
-        msg: "User already registered",
-      });
+        message: `User is Already Registered`,
+      })
     }
 
-    // generate otp
-    let otp = otpGenerator.generate(6, {
+    var otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
-    });
-
-    console.log("otp generated : ", otp);
-
-    //check otp unique or not
-    let result = await otpModel.findOne({ otp: otp });
-
+    })
+    const result = await otpModel.findOne({ otp: otp })
+    console.log("Result is Generate OTP Func")
+    console.log("OTP", otp)
+    // console.log("Result", result)
     while (result) {
-      let otp = otpGenerator.generate(6, {
+      otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
-
-      result = await otpModel.findOne({ otp: otp });
+      })
     }
-
-    // create otp in db
-    let otpCreate = await otpModel.create({ email, otp });
-    console.log(otpCreate);
-
-    return res.status(200).json({ msg: "Otp sent successfully", otpCreate });
+    const otpPayload = { email, otp }
+    const otpBody = await otpModel.create(otpPayload)
+    console.log("OTP Body", otpBody)
+    res.status(200).json({
+      success: true,
+      message: `OTP Sent Successfully`,
+      otp,
+    })
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      msg: "Otp can not send, please try again",
-    });
+    console.log(error.message)
+    return res.status(500).json({ success: false, error: error.message ,msg:"internal server error" })
   }
-};
-
+}
 // signup
 const signUp = async (req, res) => {
   try {
@@ -143,14 +131,16 @@ const signUp = async (req, res) => {
       .find({ email })
       .sort({ createdAt: -1 })
       .limit(1);
-    console.log(recentOtp);
+    // console.log(recentOtp);
 
     //validate otp
     if (recentOtp.length == 0) {
       return res.status(404).json({ success: false, msg: "otp not found" });
     }
 
-    if (otp !== recentOtp) {
+    // console.log(`enter otp : ${otp}`,`recent otp : ${recentOtp[0].otp}` );
+   
+    if (otp !== recentOtp[0].otp) {
       return res
         .status(400)
         .json({ success: false, msg: "Enter otp is not correct" });
@@ -165,6 +155,12 @@ const signUp = async (req, res) => {
       contactNumber: null,
     });
 
+    console.log(profile);
+    console.log(profile._id);
+    
+    console.log(accountType);
+    
+    
     //signup entry create in db
     const user = await userModel.create({
       firstName,
@@ -172,8 +168,9 @@ const signUp = async (req, res) => {
       email,
       password: hashPassword,
       confirmPassword,
-      accountType: profile._id,
-      image: `https://api.dicebear.com/9.x/initials/svg?seed=${firstName} ${lastName}`,
+      additionalDetails:profile._id,
+      accountType,
+      image: `https://api.dicebear.com/9.x/initials/svg?seed=${firstName}${lastName}`,
     });
 
     // send response
@@ -205,11 +202,14 @@ const login = async (req, res) => {
     //check user exist or not
     const user = await userModel
       .findOne({ email })
+      .select("+password")
       .populate("additionalDetails");
     if (!user) {
       return res.status(404).json({ msg: "user not found" });
     }
     //check password match and generate jwt token
+    console.log(user.password);
+    
     if (await bcrypt.compare(password, user.password)) {
       let payload = {
         email: user.email,

@@ -64,12 +64,10 @@ const resetPassword = async(req,res)=>{
       //data fetch 
       let {password,confirmPassword,token} = req.body;
 
-      //validate data
-      if(!isValid(password) || !isValidPassword(password)){
-        return res.status(400).json({success:false,msg:"Password is required or invalid"});
-      }
-      if(!isValid(confirmPassword) || !isValidPassword(confirmPassword)){
-        return res.status(400).json({success:false,msg:"confirm password is required or invalid"});
+      console.log(password,confirmPassword,token);
+
+      if(!isValidPassword(password)){
+        return res.status(400).json({success:false,msg:"invalid or required password"});
       }
 
       if(!isValid(token)){

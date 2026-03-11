@@ -8,10 +8,10 @@ const addSubsection = async (req, res) => {
   try {
     //fetch data from req body
     let { sectionId, title, timeDuration, description } = req.body;
-    let video = req.files.videoFile;
+    let video = req.files.video;
 
     //validate data
-    if (!mongoose.Schema.Types.ObjectId.isValid(sectionId)) {
+    if (!mongoose.Types.ObjectId.isValid(sectionId)) {
       return res
         .status(400)
         .json({ success: false, msg: "Invalid section id" });
@@ -79,12 +79,12 @@ const updateSubSection = async(req,res)=>{
     try {
         //fetch data 
         let { subSectionId, title, timeDuration, description } = req.body;
-        let video = req.files.videoFile;
+        let video = req.files.video;
         
         //make object of updated field 
         let updatedData = {};
 
-        if(!mongoose.Schema.Types.ObjectId.isValid(subSectionId)){
+        if(!mongoose.Types.ObjectId.isValid(subSectionId)){
           return res.status(400).json({success:false,msg:"Invalid sub Section id"});
         }
 
@@ -125,7 +125,7 @@ const deleteSubSection = async(req,res)=>{
         let {subSectionId} = req.params;
 
         //validate id
-        if(!mongoose.Schema.Types.ObjectId.isValid(subSectionId)){
+        if(!mongoose.Types.ObjectId.isValid(subSectionId)){
           return res.status(400).json({success:false, msg:"Invalid sub section id"})
         }
 
