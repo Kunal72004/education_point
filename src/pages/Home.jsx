@@ -10,6 +10,7 @@ import LearningLanguageSection from "../components/core/homePage/LearningLanguag
 import InstructorSection from "../components/core/homePage/InstructorSection";
 import ReviewSlider from "../components/core/homePage/ReviewSlider";
 import Footer from "../components/common/Footer";
+import ExploreMore from "../components/core/homePage/ExploreMore";
 
 const Home = () => {
   return (
@@ -112,6 +113,7 @@ const Home = () => {
         </div>
 
         {/* Explore section */}
+        <ExploreMore/>
       </div>
 
       {/* seciotn2 */}
