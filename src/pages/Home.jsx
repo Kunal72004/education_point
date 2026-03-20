@@ -117,7 +117,7 @@ const Home = () => {
       </div>
 
       {/* seciotn2 */}
-      <div className="bg-pure-greys-5 text-richblack-700">
+      <div className="bg-pure-greys-5 text-richblack-700 lg:pb-7 pb-3">
         <div className="homepage_bg h-[320px]">
           {/* explore full category section */}
           <div className="mx-auto flex w-10/12 max-w-maxContent flex-col justify-between items-center gap-8">
