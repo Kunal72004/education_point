@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { ACCOUNT_TYPE } from "../../../utils/constants";
-import { useDispatch } from "react-redux";
+import { useDispatch} from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Tab from "../../common/Tab";
-import { HiEnvelope } from "react-icons/hi2";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import toast from "react-hot-toast";
 import { setSignupData } from "../../../slices/authSlice";
-import { sendOtp } from "../../../services/operations/authApi";
+import { sendOtp } from "../../../services/operations/authapi";
 
 const SignupForm = () => {
+  
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT);
@@ -33,24 +33,21 @@ const SignupForm = () => {
   };
 
 
-  // ye abi likna rhe gaya hai 
-  
-  const handleOnSubmit = (e)=>{
-    e.preventDefault();
-    if(password !== confirmPassword ){
-      toast.error("password do not Match confirm password");
-      return;
-    }
+  const handleOnSubmit = (e) => {
+    e.preventDefault()
 
+    if (password !== confirmPassword) {
+      toast.error("Passwords Do Not Match")
+      return
+    }
     const signupData = {
       ...formData,
-      accountType
+      accountType,
     }
 
     // Setting signup data to state
     // To be used after otp verification
-    dispatch(setSignupData(signupData));
-
+    dispatch(setSignupData(signupData))
     // Send OTP to user for verification
     dispatch(sendOtp(formData.email, navigate))
 
@@ -63,8 +60,7 @@ const SignupForm = () => {
       confirmPassword: "",
     })
     setAccountType(ACCOUNT_TYPE.accountType)
-
-  }
+  };
 
   // data to pass to Tab component
   const tabData = [
@@ -85,13 +81,14 @@ const SignupForm = () => {
       <Tab tabData={tabData} field={accountType} setField={setAccountType} />
 
       {/* form */}
-      <form onSubmit={handleOnSubmit} className="flex w-full gap-y-4 flex-col" >
+      <form onSubmit={handleOnSubmit} className="flex w-full gap-y-4 flex-col">
         <div className="flex gap-x-4">
           <label htmlFor="">
             <p className="mb-1 text-[0.875rem] leading-[1.375rem] text-richblack-5">
               First Name <sup className="text-pink-200">*</sup>
             </p>
             <input
+              required
               type="text"
               name="firstName"
               value={firstName}
@@ -194,7 +191,12 @@ const SignupForm = () => {
             </span>
           </label>
         </div>
-        <button type="submit" className="mt-6 rounded-[8px]  bg-yellow-50 py-[8px] px-[12px] font-medium text-richblack-900">Create Account</button>
+        <button
+          type="submit"
+          className="mt-6 rounded-[8px]  bg-yellow-50 py-[8px] px-[12px] font-medium text-richblack-900"
+        >
+          Create Account
+        </button>
       </form>
     </div>
   );

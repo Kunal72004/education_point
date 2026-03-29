@@ -94,15 +94,8 @@ const signUp = async (req, res) => {
         .json({ success: false, msg: "email is required or invalid" });
     }
 
-    if (!isValid(password) || !isValidPassword(password)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "password is required or invalid" });
-    }
-    if (!isValid(confirmPassword) || !isValidPassword(confirmPassword)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "password is required or invalid" });
+    if(!password || !confirmPassword){
+      return res.status(400).json({success:false, msg:"password and confirm password field is required"})
     }
 
     if (!isValid(accountType)) {
@@ -176,7 +169,7 @@ const signUp = async (req, res) => {
     // send response
     return res
       .status(201)
-      .json({ success: false, msg: "user signUp successfully", user });
+      .json({ success: true, msg: "user signUp successfully", user });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -252,10 +245,10 @@ const changePassword = async (req, res) => {
     if (!mongoose.Schema.Types.ObjectId.isValid(userId)){
       return res.status(400).json({success:false,msg:"invalid user id"});
     }
-    if (!isValid(oldPassword) || !isValidPassword(oldPassword)) {
+    if (!oldPassword || !oldPassword) {
       return res.status(400).json({ success: false, msg: "Invalid password" });
     }
-    if (!isValid(newPassword) || !isValidPassword(newPassword)) {
+    if (newPassword || newPassword){
       return res
         .status(400)
         .json({ success: false, msg: "Invalid newPassword" });

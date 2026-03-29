@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { login } from "../../../services/operations/authapi";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -21,10 +22,9 @@ const LoginForm = () => {
     }));
   };
   
-  //abhi thode changes kerne hai isme
   const handleSubmit = (e)=>{
     e.preventDefault();
-    
+    dispatch(login(email,password,navigate))
 
   }
 
