@@ -9,6 +9,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/updatePassword";
 import VerifyEmail from "./pages/verifyEmail";
 import MyProfile from "./components/core/Dashboard/MyProfile";
+import About from "./pages/About";
 
 function App() {
   return (
@@ -36,7 +37,7 @@ function App() {
           path="forgot-password"
           element={
             <OpenRoute>
-              <ForgotPassword/>
+              <ForgotPassword />
             </OpenRoute>
           }
         />
@@ -44,21 +45,27 @@ function App() {
           path="update-password/:id"
           element={
             <OpenRoute>
-              <UpdatePassword/>
+              <UpdatePassword />
             </OpenRoute>
           }
         />
         <Route
           path="verify-email"
           element={
-              <OpenRoute>
-                <VerifyEmail/>
-              </OpenRoute>
+            <OpenRoute>
+              <VerifyEmail />
+            </OpenRoute>
           }
         />
-        <Route
-        path="dashboard/my-profile"
-        element={<MyProfile/>}/>
+         <Route
+          path="/about"
+          element={
+            
+              <About />
+            
+          }
+        />
+        <Route path="dashboard/my-profile" element={<MyProfile />} />
       </Routes>
     </div>
   );
