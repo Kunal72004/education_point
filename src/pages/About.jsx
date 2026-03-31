@@ -108,7 +108,7 @@ const About = () => {
 
       <Stats />
 
-      <div>
+      <div className="mx-auto mt-20 flex flex-co w-10/12 max-w-maxContent justify-between gap-10 text-white">
         <LearningGrid/>
       </div>
       <Footer/>
