@@ -1,4 +1,3 @@
-import React from "react";
 import HighlightText from "../components/core/homePage/HighlightText";
 import BannerImage1 from "../assets/Images/aboutus1.webp";
 import BannerImage2 from "../assets/Images/aboutus2.webp";
@@ -8,6 +7,7 @@ import FoundingStory from "../assets/Images/FoundingStory.png";
 import Stats from "../components/core/aboutPage/Stats";
 import Footer from "../components/common/Footer";
 import LearningGrid from "../components/core/aboutPage/LearningGrid";
+import ContactFormSection from "../components/core/aboutPage/ContactFormSection";
 
 const About = () => {
   return (
@@ -108,8 +108,18 @@ const About = () => {
 
       <Stats />
 
-      <div className="mx-auto mt-20 flex flex-co w-10/12 max-w-maxContent justify-between gap-10 text-white">
+      <section className="mx-auto mt-20 flex flex-col w-10/12 max-w-maxContent justify-between gap-10 text-white">
         <LearningGrid/>
+        <ContactFormSection/>
+      </section>
+
+      <div className="relative mx-auto my-20 flex w-11/12 max-w-maxContent flex-col items-center justify-between gap-8 bg-richblack-900 text-white">
+        {/* Reviws from Other Learner */}
+        <h1 className="text-center text-4xl font-semibold mt-8">
+          Reviews from other learners
+        </h1>
+        {/* <ReviewSlider /> */}
+        
       </div>
       <Footer/>
     </div>

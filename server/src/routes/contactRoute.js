@@ -1,8 +1,8 @@
 const express = require("express")
-const { contactUsController } = require("../controllers/contactController")
 const router = express.Router()
+const { contactUs } = require("../controllers/contactUsController");
 
-//constact route
-router.post("/contact",contactUsController);
+//contact route
+router.post("/contact",contactUs);
 
 module.exports = router
