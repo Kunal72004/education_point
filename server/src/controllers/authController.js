@@ -19,11 +19,11 @@ const { passwordUpdated } = require("../mail/templates/passwordUpdate");
 // Send OTP For Email Verification
 const sendOtp = async (req, res) => {
   try {
-    const { email } = req.body
+    const { email } = req.body;
 
     // Check if user is already present
     // Find user with provided email
-    const checkUserPresent = await userModel.findOne({ email })
+    const checkUserPresent = await userModel.findOne({ email });
     // to be used in case of signup
 
     // If user found with provided email
@@ -32,36 +32,42 @@ const sendOtp = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: `User is Already Registered`,
-      })
+      });
     }
 
     var otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
-    })
-    const result = await otpModel.findOne({ otp: otp })
-    console.log("Result is Generate OTP Func")
-    console.log("OTP", otp)
+    });
+    const result = await otpModel.findOne({ otp: otp });
+    console.log("Result is Generate OTP Func");
+    console.log("OTP", otp);
     // console.log("Result", result)
     while (result) {
       otp = otpGenerator.generate(6, {
         upperCaseAlphabets: false,
-      })
+      });
     }
-    const otpPayload = { email, otp }
-    const otpBody = await otpModel.create(otpPayload)
-    console.log("OTP Body", otpBody)
+    const otpPayload = { email, otp };
+    const otpBody = await otpModel.create(otpPayload);
+    console.log("OTP Body", otpBody);
     res.status(200).json({
       success: true,
       message: `OTP Sent Successfully`,
       otp,
-    })
+    });
   } catch (error) {
-    console.log(error.message)
-    return res.status(500).json({ success: false, error: error.message ,msg:"internal server error" })
+    console.log(error.message);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        error: error.message,
+        msg: "internal server error",
+      });
   }
-}
+};
 // signup
 const signUp = async (req, res) => {
   try {
@@ -94,8 +100,13 @@ const signUp = async (req, res) => {
         .json({ success: false, msg: "email is required or invalid" });
     }
 
-    if(!password || !confirmPassword){
-      return res.status(400).json({success:false, msg:"password and confirm password field is required"})
+    if (!password || !confirmPassword) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          msg: "password and confirm password field is required",
+        });
     }
 
     if (!isValid(accountType)) {
@@ -132,7 +143,7 @@ const signUp = async (req, res) => {
     }
 
     // console.log(`enter otp : ${otp}`,`recent otp : ${recentOtp[0].otp}` );
-   
+
     if (otp !== recentOtp[0].otp) {
       return res
         .status(400)
@@ -150,10 +161,9 @@ const signUp = async (req, res) => {
 
     console.log(profile);
     console.log(profile._id);
-    
+
     console.log(accountType);
-    
-    
+
     //signup entry create in db
     const user = await userModel.create({
       firstName,
@@ -161,7 +171,7 @@ const signUp = async (req, res) => {
       email,
       password: hashPassword,
       confirmPassword,
-      additionalDetails:profile._id,
+      additionalDetails: profile._id,
       accountType,
       image: `https://api.dicebear.com/9.x/initials/svg?seed=${firstName}${lastName}`,
     });
@@ -202,7 +212,7 @@ const login = async (req, res) => {
     }
     //check password match and generate jwt token
     console.log(user.password);
-    
+
     if (await bcrypt.compare(password, user.password)) {
       let payload = {
         email: user.email,
@@ -237,74 +247,81 @@ const login = async (req, res) => {
 // change password
 const changePassword = async (req, res) => {
   try {
-    //get data
-    let { oldPassword, newPassword } = req.body;
-    let userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user.id;
 
-    //validate
-    if (!mongoose.Schema.Types.ObjectId.isValid(userId)){
-      return res.status(400).json({success:false,msg:"invalid user id"});
-    }
-    if (!oldPassword || !oldPassword) {
-      return res.status(400).json({ success: false, msg: "Invalid password" });
-    }
-    if (newPassword || newPassword){
-      return res
-        .status(400)
-        .json({ success: false, msg: "Invalid newPassword" });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ success: false, msg: "Invalid user id" });
     }
 
-    //get user
-    const userDetaitl = await userModel.findById(userId);
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "All fields are required",
+      });
+    }
 
-    //validate old password
+    if (oldPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "New password must be different",
+      });
+    }
+
+    const userDetail = await userModel.findById(userId).select("+password");;
+
+    if (!userDetail) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+    // console.log("oldPassword:", oldPassword);
+    // console.log("userDetail:", userDetail);
+    // console.log("hashedPassword:", userDetail?.password);
+
     const isPasswordMatch = await bcrypt.compare(
       oldPassword,
-      userDetaitl.password,
+      userDetail.password,
     );
+
     if (!isPasswordMatch) {
-      return res
-        .status(401)
-        .json({ succes: false, msg: "password is incorrect" });
+      return res.status(401).json({
+        success: false,
+        msg: "Password is incorrect",
+      });
     }
 
-    //update password
     const encryptedPassword = await bcrypt.hash(newPassword, 10);
-    const updatedUserDetail = await userModel.findByIdAndUpdate(
-      userId,
-      { password: encryptedPassword },
-      { new: true },
-    );
 
-    //send email
+    await userModel.findByIdAndUpdate(userId, {
+      password: encryptedPassword,
+    });
+
+    // email
     try {
-      const emailResponse = await sendMail(
-        userDetaitl.email,
-        "Password for your account has been updated",
+      await sendMail(
+        userDetail.email,
+        "Password updated",
         passwordUpdated(
-          updatedUserDetail.email,
-          `Password updated successfully for ${updatedUserDetail.firstName} ${updatedUserDetail.lastName}`,
+          userDetail.email,
+          `Password updated successfully for ${userDetail.firstName} ${userDetail.lastName}`,
         ),
       );
-      console.log("Email send successfully: ", emailResponse.response);
-    } catch (error) {
-      // if there's an error sending the email, log the error and return a error
-      console.log("error occured while sending the sending eamil", error);
-      return res
-        .status(500)
-        .json({ success: false, msg: "error occured while sending email" });
+    } catch (err) {
+      console.log("Email failed:", err);
     }
 
-    //return success response
-    return res.status(200).json({success:true,msg:"password updated successfully"})
+    return res.status(200).json({
+      success: true,
+      msg: "Password updated successfully",
+    });
   } catch (error) {
-// If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
-    console.error("Error occurred while updating password:", error)
+    console.error(error);
     return res.status(500).json({
       success: false,
-      message: "Error occurred while updating password",
-      error: error.message,
-    })
+      msg: "Internal server error",
+    });
   }
 };
 
