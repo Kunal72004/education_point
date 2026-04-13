@@ -5,11 +5,15 @@ import Navbar from "./components/common/Navbar";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import OpenRoute from "../src/components/core/auth/OpenRoute";
+import PrivateRoute from "../src/components/core/auth/PrivatRoute";
 import ForgotPassword from "./pages/ForgotPassword";
 import UpdatePassword from "./pages/updatePassword";
 import VerifyEmail from "./pages/verifyEmail";
 import MyProfile from "./components/core/Dashboard/MyProfile";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Dashboard from "./pages/Dashboard";
+import Settings from "./components/core/Dashboard/Settings";
 
 function App() {
   return (
@@ -57,15 +61,18 @@ function App() {
             </OpenRoute>
           }
         />
-         <Route
-          path="/about"
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route
           element={
-            
-              <About />
-            
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
           }
-        />
-        <Route path="dashboard/my-profile" element={<MyProfile />} />
+        >
+          <Route path="dashboard/my-profile" element={<MyProfile />} />
+          <Route path="dashboard/settings" element={<Settings/>} />
+        </Route>
       </Routes>
     </div>
   );
