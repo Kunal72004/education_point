@@ -14,8 +14,14 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./components/core/Dashboard/Settings";
+import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
+import { useSelector } from "react-redux";
+import { ACCOUNT_TYPE } from "./utils/constants";
+import Cart from "./components/core/Dashboard/Cart/Index";
 
 function App() {
+  const { user } = useSelector((state) => state.profile);
+  
   return (
     <div className="flex flex-col w-screen min-h-screen bg-richblack-900 font-inter ">
       <Navbar />
@@ -71,7 +77,17 @@ function App() {
           }
         >
           <Route path="dashboard/my-profile" element={<MyProfile />} />
-          <Route path="dashboard/settings" element={<Settings/>} />
+          <Route path="dashboard/settings" element={<Settings />} />
+
+          {user?.accountType === ACCOUNT_TYPE.STUDENT && (
+            <>
+              <Route
+                path="dashboard/enrolled-courses"
+                element={<EnrolledCourses />}
+              />
+              <Route path="dashboard/cart" element={<Cart/>}/>
+            </>
+          )}
         </Route>
       </Routes>
     </div>
