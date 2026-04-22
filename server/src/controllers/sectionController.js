@@ -58,7 +58,7 @@ const updateSection = async(req,res)=>{
             return res.status(400).json({success:false, msg:"section Name is required or invalid"});
         }
 
-        if(!mongoose.Types.ObjectId.isValid(sectionId)){
+        if(!isValid(sectionId)){
             return res.status(400).json({success:false , msg:"Invalid section id"});
         }
         //update data

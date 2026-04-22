@@ -4,6 +4,8 @@ const categoryModel = require("../models/categoryModel");
 const courseModel = require("../models/courseModel");
 const { isValid, isValidName } = require("../utils/validator");
 const uploadToCloudinary = require("../utils/uploadCloudinary");
+const courseProgressModel = require("../models/courseProgressModel");
+const { convertSecondsToDuration } = require("../utils/secToDuration");
 
 const createCourse = async (req, res) => {
   try {
@@ -38,7 +40,7 @@ const createCourse = async (req, res) => {
       });
     }
 
-    if (!isValid(price) && typeof price !== "number" && price < 0) {
+    if (!isValid(price) || price < 0) {
       return res
         .status(400)
         .json({ success: false, msg: "price is required or invalid price" });
@@ -48,14 +50,14 @@ const createCourse = async (req, res) => {
         .status(400)
         .json({ success: false, msg: "tag is required or invalid" });
     }
-    if (!mongoose.Types.ObjectId.isValid(category)) {
+    if (!isValid(category)) {
       return res
         .status(400)
         .json({ success: false, msg: "Invalid category id " });
     }
     //get userId from storing data in request by decoding the token
     const userId = req.user.id;
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!isValid(userId)) {
       return res
         .status(401)
         .json({ success: false, msg: "invalid instructor id " });
@@ -199,12 +201,16 @@ const getCourseDetails = async (req, res) => {
       })
       .exec();
 
-      if(!courseDetails){
-        return res.status(400).json({success:false, msg:"course Not found"})
-      }
+    if (!courseDetails) {
+      return res.status(400).json({ success: false, msg: "course Not found" });
+    }
 
-      //return response
-      return res.status(200).json({success:true, msg:"course detail fetched successfully", data:courseDetails});
+    //return response
+    return res.status(200).json({
+      success: true,
+      msg: "course detail fetched successfully",
+      data: courseDetails,
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -214,4 +220,152 @@ const getCourseDetails = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, getAllCourses, getCourseDetails };
+const editCourse = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const updates = req.body;
+    const course = await courseModel.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    // If Thumbnail Image is found, update it
+    if (req.files) {
+      console.log("thumbnail update");
+      const thumbnail = req.files.thumbnailImage;
+      const thumbnailImage = await uploadImageToCloudinary(
+        thumbnail,
+        process.env.FOLDER_NAME,
+      );
+      course.thumbnail = thumbnailImage.secure_url;
+    }
+
+    // Update only the fields that are present in the request body
+    for (const key in updates) {
+      if (updates.hasOwnProperty(key)) {
+        if (key === "tag" || key === "instructions") {
+          course[key] = JSON.parse(updates[key]);
+        } else {
+          course[key] = updates[key];
+        }
+      }
+    }
+
+    await course.save();
+
+    const updatedCourse = await courseModel
+      .findOne({
+        _id: courseId,
+      })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "courseContent",
+        populate: {
+          path: "SubSection",
+        },
+      })
+      .exec();
+
+    res.json({
+      success: true,
+      message: "Course updated successfully",
+      data: updatedCourse,
+    });
+  } catch (error) {}
+};
+
+const getFullCourseDetails = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const userId = req.user.id;
+    const courseDetails = await courseModel
+      .findOne({
+        _id: courseId,
+      })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "additionalDetails",
+        },
+      })
+      .populate("category")
+      .populate("ratingAndReviews")
+      .populate({
+        path: "courseContent",
+        populate: {
+          path: "SubSection",
+        },
+      })
+      .exec();
+
+    let courseProgressCount = await courseProgressModel.findOne({
+      courseID: courseId,
+      userId: userId,
+    });
+
+    console.log("courseProgressCount : ", courseProgressCount)
+    if (!courseDetails) {
+      return res.status(400).json({
+        success: false,
+        message: `Could not find course with id: ${courseId}`,
+      })
+    }
+    let totalDurationInSeconds = 0
+    courseDetails.courseContent.forEach((content) => {
+      content.subSection.forEach((subSection) => {
+        const timeDurationInSeconds = parseInt(subSection.timeDuration)
+        totalDurationInSeconds += timeDurationInSeconds
+      })
+    })
+    const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
+    return res.status(200).json({
+      success: true,
+      data: {
+        courseDetails,
+        totalDuration,
+        completedVideos: courseProgressCount?.completedVideos
+          ? courseProgressCount?.completedVideos
+          : [],
+      },
+    })
+
+  } catch (error) {
+
+  }
+};
+
+// Get a list of Course for a given Instructor
+const getInstructorCourses = async(req,res)=>{
+  try {
+    // Get the instructor ID from the authenticated user or request body
+    const instructorId = req.user.id
+
+    const instructorCourses = await courseModel.find({
+      instructor: instructorId,
+    }).sort({ createdAt: -1 })
+
+    // Return the instructor's courses
+    res.status(200).json({
+      success: true,
+      data: instructorCourses,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve instructor courses",
+      error: error.message,
+    })
+  }
+  
+}
+
+module.exports = { createCourse, getAllCourses, getCourseDetails, editCourse, getFullCourseDetails,getInstructorCourses};
