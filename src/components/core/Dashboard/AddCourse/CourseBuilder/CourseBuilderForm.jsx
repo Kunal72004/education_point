@@ -1,59 +1,94 @@
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import IconBtn from '../../../../common/IconBtn'
-import { IoAddCircleOutline } from "react-icons/io5"
-import { MdNavigateNext } from 'react-icons/md'
-import { useDispatch, useSelector } from 'react-redux'
-import NestedView from './NestedView'
-
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import IconBtn from "../../../../common/IconBtn";
+import { IoAddCircleOutline } from "react-icons/io5";
+import { MdNavigateNext } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
+import NestedView from "./NestedView";
+import {
+  createSection,
+  updateSection,
+} from "../../../../../services/operations/courseDetailsApi";
+import {
+  setCourse,
+  setEditCourse,
+  setStep,
+} from "../../../../../slices/courseSlice";
 
 const CourseBuilderForm = () => {
-  const [loading, setLoading] = useState(false)
-  const [editSectionName, setEditSectionName] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [editSectionName, setEditSectionName] = useState(null);
 
-  const {course} = useSelector((state)=>state.course);
-  const { token } = useSelector((state) => state.auth)
+  const { course } = useSelector((state) => state.course);
+  const { token } = useSelector((state) => state.auth);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm()
+  } = useForm();
 
   const cancelEdit = () => {
-    setEditSectionName(null)
-    setValue("sectionName", "")
-  }
+    setEditSectionName(null);
+    setValue("sectionName", "");
+  };
 
   // handle form submission
-  const onSubmit = async(data)=>{
-    // console.log(data)
+  const onSubmit = async (data) => {
+    console.log("DATA : ", data);
     setLoading(true);
     let result;
-    if(editSectionName){
-      // result = await
+
+    if (editSectionName) {
+      result = await updateSection(
+        {
+          sectionName: data.sectionName,
+          sectionId: editSectionName,
+          courseId: course._id,
+        },
+        token,
+      );
+      console.log("edit", result);
+    } else {
+      result = await createSection(
+        {
+          sectionName: data.sectionName,
+          courseId: course._id,
+        },
+        token,
+      );
+    }
+    if (result) {
+      dispatch(setCourse(result));
+      setEditSectionName(null);
+      setValue("sectionName", "");
+    }
+    setLoading(false);
+  };
+
+  const goBack = () => {};
+
+  const goToNext = () => {};
+
+  const handleChangeEditSectionName = (sectionId, sectionName)=>{
+    if(editSectionName == sectionId){
+      cancelEdit();
+      return;
     }
 
+    setEditSectionName(sectionId);
+    setValue("sectionName",sectionName);
   }
 
-  const goBack = ()=>{
-
-  }
-
-  const goToNext = ()=>{
-
-  }
-
-  console.log(course);
-  
+  // console.log(course);
 
   return (
     <div className="space-y-8 rounded-md border-[1px] border-richblack-700 bg-richblack-800 p-6">
       <p className="text-2xl font-semibold text-richblack-5">Course Builder</p>
-      <form onSubmit={handleSubmit(onSubmit())} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex flex-col space-y-2">
           <label className="text-sm text-richblack-5" htmlFor="sectionName">
             Section Name <sup className="text-pink-200">*</sup>
@@ -91,9 +126,7 @@ const CourseBuilderForm = () => {
           )}
         </div>
       </form>
-      {
-        course.courseContent.length>=0 && (<NestedView/>)
-      }
+      {course.courseContent.length > 0 && <NestedView handleChangeEditSectionName={handleChangeEditSectionName}/>}
       {/* Next Prev Button */}
       <div className="flex justify-end gap-x-3">
         <button
@@ -107,7 +140,7 @@ const CourseBuilderForm = () => {
         </IconBtn>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CourseBuilderForm
+export default CourseBuilderForm;
