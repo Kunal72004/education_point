@@ -14,6 +14,7 @@ import {
   setEditCourse,
   setStep,
 } from "../../../../../slices/courseSlice";
+import toast from "react-hot-toast";
 
 const CourseBuilderForm = () => {
   const [loading, setLoading] = useState(false);
@@ -69,9 +70,24 @@ const CourseBuilderForm = () => {
     setLoading(false);
   };
 
-  const goBack = () => {};
+  const goBack = () => {
+    dispatch(setStep(1))
+    dispatch(setEditCourse(true))
+  };
 
-  const goToNext = () => {};
+  const goToNext = () => {
+    if (course.courseContent.length === 0) {
+      toast.error("Please add atleast one section")
+      return
+    }
+    if (
+      course.courseContent.some((section) => section.subSection.length === 0)
+    ) {
+      toast.error("Please add atleast one lecture in each section")
+      return
+    }
+    dispatch(setStep(3))
+  };
 
   const handleChangeEditSectionName = (sectionId, sectionName)=>{
     if(editSectionName == sectionId){

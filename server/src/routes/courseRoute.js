@@ -55,7 +55,7 @@ router.post("/addSubSection", authentication, isInstructor, addSubsection);
 //update subSection
 router.put("/updateSubSection", authentication, isInstructor, updateSubSection);
 //delete deleteSubSection
-router.delete("/deleteSubSection/:subSectionId", authentication, isInstructor, deleteSubSection);
+router.delete("/deleteSubSection", authentication, isInstructor, deleteSubSection);
 
 //get all registered course
 router.get("/getAllCourse", getAllCourses);
