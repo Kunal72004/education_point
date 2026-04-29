@@ -9,135 +9,123 @@ const { convertSecondsToDuration } = require("../utils/secToDuration");
 
 const createCourse = async (req, res) => {
   try {
-    //data fetch
+    // Fetch data
     let {
       courseName,
       courseDescription,
       whatYouWillLearn,
       price,
-      tag,
+      tag: _tag,
       category,
+      status,
+      instructions: _instructions,
     } = req.body;
 
-    //get thumbnail
-    let thumbnail = req.files.thumbnailImage;
+    const userId = req.user.id;
 
-    //validate data
-    if (!isValid(courseName) || !isValidName(courseName)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Course Name is required or invalid" });
+    // File (safe access)
+    const thumbnail = req.files?.thumbnailImage;
+
+    
+    let tag = [];
+    let instructions = [];
+    let parsedWhatYouWillLearn = whatYouWillLearn;
+
+    try {
+      tag = _tag ? JSON.parse(_tag) : [];
+    } catch {
+      tag = [];
     }
-    if (!isValid(courseDescription)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Course Name is required or invalid" });
+
+    try {
+      instructions = _instructions ? JSON.parse(_instructions) : [];
+    } catch {
+      instructions = [];
     }
-    if (!isValid(whatYouWillLearn)) {
+
+    
+    // Validation
+    if (
+      !courseName ||
+      !courseDescription ||
+      !price ||
+      !category ||
+      !thumbnail ||
+      tag.length === 0 ||
+      instructions.length === 0 ||
+      !parsedWhatYouWillLearn
+    ) {
       return res.status(400).json({
         success: false,
-        msg: "What you will learn is required or invalid",
+        message: "All fields are required",
       });
     }
 
-    if (!isValid(price) || price < 0) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "price is required or invalid price" });
-    }
-    if (!isValid(tag)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "tag is required or invalid" });
-    }
-    if (!isValid(category)) {
-      return res
-        .status(400)
-        .json({ success: false, msg: "Invalid category id " });
-    }
-    //get userId from storing data in request by decoding the token
-    const userId = req.user.id;
-    if (!isValid(userId)) {
-      return res
-        .status(401)
-        .json({ success: false, msg: "invalid instructor id " });
+    //  Default status
+    if (!status) {
+      status = "Draft";
     }
 
-    //find instructor in db
+    //  Instructor check
     const instructorDetails = await userModel.findById(userId);
-    console.log(instructorDetails);
-
     if (!instructorDetails) {
-      return res
-        .status(404)
-        .json({ success: false, msg: "Instructor not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found",
+      });
     }
 
-    if (instructorDetails.accountType !== "Instructor") {
-      return res
-        .status(403)
-        .json({ success: false, msg: "only Instructor can create the course" });
-    }
-
-    // check tag is valid or not
+    // Category check
     const categoryDetails = await categoryModel.findById(category);
-
     if (!categoryDetails) {
-      return res
-        .status(404)
-        .json({ success: false, msg: "category is not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
     }
 
-    //upload image to cloudinary
-    const thumbnailImage = await uploadToCloudinary(
+    //  Upload thumbnail
+    const thumbnailUpload = await uploadToCloudinary(
       thumbnail,
-      process.env.FOLDER_NAME,
+      process.env.FOLDER_NAME
     );
 
+    //  Create course
     const newCourse = await courseModel.create({
       courseName,
       courseDescription,
       instructor: instructorDetails._id,
-      whatYouWillLearn,
+      whatYouWillLearn: parsedWhatYouWillLearn,
       price,
-      category: categoryDetails._id,
-      thumbnail: thumbnailImage.secure_url,
       tag,
+      category: categoryDetails._id,
+      thumbnail: thumbnailUpload.secure_url,
+      status,
+      instructions,
     });
 
-    //add new course to the user schema to instructor
-    await userModel.findByIdAndUpdate(
-      { _id: instructorDetails._id },
-      {
-        $push: {
-          courses: newCourse._id,
-        },
-      },
-      { new: true },
-    );
+    // Add course to instructor
+    await userModel.findByIdAndUpdate(userId, {
+      $push: { courses: newCourse._id },
+    });
 
-    //add new course to th tag schema
-    await categoryModel.findByIdAndUpdate(
-      { _id: categoryDetails._id },
-      {
-        $push: {
-          course: newCourse._id,
-        },
-      },
-      { new: true },
-    );
+    // Add course to category
+    await categoryModel.findByIdAndUpdate(category, {
+      $push: { course: newCourse._id },
+    });
 
-    // return res
-    return res.status(201).json({
+    // Response
+    return res.status(200).json({
       success: true,
-      msg: "New course created successfully",
       data: newCourse,
+      message: "Course created successfully",
     });
+
   } catch (error) {
-    console.log(error);
+    console.error("CREATE COURSE ERROR:", error);
     return res.status(500).json({
       success: false,
-      msg: "something went wrong while creating course",
+      message: "Something went wrong while creating course",
     });
   }
 };
@@ -311,20 +299,20 @@ const getFullCourseDetails = async (req, res) => {
       userId: userId,
     });
 
-    console.log("courseProgressCount : ", courseProgressCount)
+    console.log("courseProgressCount : ", courseProgressCount);
     if (!courseDetails) {
       return res.status(400).json({
         success: false,
         message: `Could not find course with id: ${courseId}`,
-      })
+      });
     }
-    let totalDurationInSeconds = 0
+    let totalDurationInSeconds = 0;
     courseDetails.courseContent.forEach((content) => {
       content.subSection.forEach((subSection) => {
-        const timeDurationInSeconds = parseInt(subSection.timeDuration)
-        totalDurationInSeconds += timeDurationInSeconds
-      })
-    })
+        const timeDurationInSeconds = parseInt(subSection.timeDuration);
+        totalDurationInSeconds += timeDurationInSeconds;
+      });
+    });
     const totalDuration = convertSecondsToDuration(totalDurationInSeconds);
     return res.status(200).json({
       success: true,
@@ -335,37 +323,42 @@ const getFullCourseDetails = async (req, res) => {
           ? courseProgressCount?.completedVideos
           : [],
       },
-    })
-
-  } catch (error) {
-
-  }
+    });
+  } catch (error) {}
 };
 
 // Get a list of Course for a given Instructor
-const getInstructorCourses = async(req,res)=>{
+const getInstructorCourses = async (req, res) => {
   try {
     // Get the instructor ID from the authenticated user or request body
-    const instructorId = req.user.id
+    const instructorId = req.user.id;
 
-    const instructorCourses = await courseModel.find({
-      instructor: instructorId,
-    }).sort({ createdAt: -1 })
+    const instructorCourses = await courseModel
+      .find({
+        instructor: instructorId,
+      })
+      .sort({ createdAt: -1 });
 
     // Return the instructor's courses
     res.status(200).json({
       success: true,
       data: instructorCourses,
-    })
+    });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to retrieve instructor courses",
       error: error.message,
-    })
+    });
   }
-  
-}
+};
 
-module.exports = { createCourse, getAllCourses, getCourseDetails, editCourse, getFullCourseDetails,getInstructorCourses};
+module.exports = {
+  createCourse,
+  getAllCourses,
+  getCourseDetails,
+  editCourse,
+  getFullCourseDetails,
+  getInstructorCourses,
+};

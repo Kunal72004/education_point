@@ -20,6 +20,7 @@ import { ACCOUNT_TYPE } from "./utils/constants";
 import Cart from "./components/core/Dashboard/Cart/Index";
 import Error from './pages/Error'
 import AddCourse from "./components/core/Dashboard/AddCourse";
+import MyCourses from "./components/core/Dashboard/MyCourses";
 
 function App() {
   const { user } = useSelector((state) => state.profile);
@@ -93,8 +94,8 @@ function App() {
 
           {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
             <>
-            <Route path="dashboard/add-course" element={<AddCourse/>}
-            />
+            <Route path="dashboard/add-course" element={<AddCourse/>}/>
+            <Route path="dashboard/my-course" element={<MyCourses/>}/>
             </>
           )}
         </Route>
