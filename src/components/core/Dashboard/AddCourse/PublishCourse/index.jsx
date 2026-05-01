@@ -23,6 +23,9 @@ const PublishCourse = () => {
 
   const handleCoursePublish = async () => {
     // check if form has been updated or not
+
+    console.log("course status:", course?.status);
+    console.log("checkbox:", getValues("public"));
     if (
       (course?.status === COURSE_STATUS.PUBLISHED &&
         getValues("public") === true) ||
@@ -30,6 +33,8 @@ const PublishCourse = () => {
     ) {
       // form has not been updated
       // no need to make api call
+      console.log("api call nhi huyi");
+      
       goToCourses();
       return;
     }
@@ -40,16 +45,23 @@ const PublishCourse = () => {
       ? COURSE_STATUS.PUBLISHED
       : COURSE_STATUS.DRAFT;
     formData.append("status", courseStatus);
+    
+    console.log("loading true before");
+    
     setLoading(true);
     const result = await editCourseDetails(formData, token);
+    console.log("result" , result );
+    
     if (result) {
       goToCourses();
     }
     setLoading(false);
+    console.log("loading true after");
+
   };
 
   const onSubmit = (data) => {
-    console.log(data);
+    console.log("form data : " ,data);
     handleCoursePublish();
   };
 
@@ -93,7 +105,7 @@ const PublishCourse = () => {
           >
             Back
           </button>
-          <IconBtn type="submit" disabled={loading} text="Save Changes" />
+          <IconBtn  disabled={loading} text="Save Changes" />
         </div>
       </form>
     </div>

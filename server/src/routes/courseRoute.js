@@ -65,7 +65,7 @@ router.post("/getCourseDetails", getCourseDetails);
 // Get Details for a Specific Courses
 router.post("/getFullCourseDetails", authentication, getFullCourseDetails)
 // Edit Course routes
-router.post("/editCourse", authentication, isInstructor, editCourse);
+router.put("/editCourse", authentication, isInstructor, editCourse);
 // Get all Courses Under a Specific Instructor
 router.get("/getInstructorCourses", authentication, isInstructor, getInstructorCourses)
 

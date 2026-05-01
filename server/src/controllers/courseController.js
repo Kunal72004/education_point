@@ -211,7 +211,8 @@ const getCourseDetails = async (req, res) => {
 const editCourse = async (req, res) => {
   try {
     const { courseId } = req.body;
-    const updates = req.body;
+    const updates = { ...req.body };
+    delete updates.courseId;
     const course = await courseModel.findById(courseId);
 
     if (!course) {
@@ -231,14 +232,18 @@ const editCourse = async (req, res) => {
 
     // Update only the fields that are present in the request body
     for (const key in updates) {
-      if (updates.hasOwnProperty(key)) {
-        if (key === "tag" || key === "instructions") {
-          course[key] = JSON.parse(updates[key]);
-        } else {
-          course[key] = updates[key];
-        }
+  if (updates.hasOwnProperty(key)) {
+    if (key === "tag" || key === "instructions") {
+      try {
+        course[key] = JSON.parse(updates[key]);
+      } catch {
+        course[key] = updates[key];
       }
+    } else {
+      course[key] = updates[key];
     }
+  }
+}
 
     await course.save();
 
@@ -257,17 +262,23 @@ const editCourse = async (req, res) => {
       .populate({
         path: "courseContent",
         populate: {
-          path: "SubSection",
+          path: "subSection",
         },
       })
       .exec();
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Course updated successfully",
       data: updatedCourse,
     });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      msg: "something went wrong, while editing Course",
+    });
+  }
 };
 
 const getFullCourseDetails = async (req, res) => {
@@ -289,7 +300,7 @@ const getFullCourseDetails = async (req, res) => {
       .populate({
         path: "courseContent",
         populate: {
-          path: "SubSection",
+          path: "subSection",
         },
       })
       .exec();
@@ -324,7 +335,12 @@ const getFullCourseDetails = async (req, res) => {
           : [],
       },
     });
-  } catch (error) {}
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    })
+  }
 };
 
 // Get a list of Course for a given Instructor
