@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ConfirmModal from '../../../common/ConfirmModal'
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { fetchInstructorCourses } from "../../../../services/operations/courseDetailsApi";
+import { deleteCourse, fetchInstructorCourses } from "../../../../services/operations/courseDetailsApi";
 
 const CourseTable = ({ courses, setCourses }) => {
   const TRUNCATE_LENGTH = 30;
@@ -22,7 +22,7 @@ const CourseTable = ({ courses, setCourses }) => {
 
   const handleCourseDelete = async(courseId)=>{
     setLoading(true)
-    // await deleteCourse({ courseId: courseId }, token)
+    await deleteCourse({ courseId: courseId }, token)
     const result = await fetchInstructorCourses(token)
     if (result) {
       setCourses(result)

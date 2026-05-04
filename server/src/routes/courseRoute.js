@@ -16,6 +16,7 @@ const {
   editCourse,
   getFullCourseDetails,
   getInstructorCourses,
+  deleteCourse,
 } = require("../controllers/courseController");
 const {
   addSection,
@@ -42,6 +43,9 @@ const {
 
 //course created (only Instructor)
 router.post("/createCourse", authentication, isInstructor, createCourse);
+
+// Delete a Course
+router.delete("/deleteCourse",authentication,isInstructor, deleteCourse)
 
 //add section to course
 router.post("/addSection", authentication, isInstructor, addSection);
@@ -73,10 +77,9 @@ router.get("/getInstructorCourses", authentication, isInstructor, getInstructorC
 
 router.post("/createCategory", authentication, isAdmin, createCategory);
 router.get("/showAllCategories", getAllCategory);
-router.post("/categoryPageDetails", categoryPageDetails);
+router.post("/getCategoryPageDetails", categoryPageDetails);
 
 //rating and reviews
-
 router.post("/createRating", authentication, isStudent, createRating);
 router.get("/getAverageRating", getAverageRating);
 router.get("/getReviews", getAllRating);

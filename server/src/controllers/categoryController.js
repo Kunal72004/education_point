@@ -33,13 +33,11 @@ const createCategory = async (req, res) => {
 
 const getAllCategory = async (req, res) => {
   try {
-    const allCategory = await categoryModel.find(
-      {},
-      { name: true, description: true },
-    );
+    console.log("INSIDE SHOW ALL CATEGORIES");
+    const allCategorys = await categoryModel.find({});
     return res
       .status(200)
-      .json({ success: true, msg: "getting all successfully",allCategory });
+      .json({ success: true, msg: "getting all successfully",data:allCategorys });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -54,7 +52,7 @@ const categoryPageDetails = async (req, res) => {
     //get category id
     let { categoryId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    if (!isValid(categoryId)) {
       return res.status(400).json({
         success: false,
         msg: "Invalid category id",

@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const userModel = require("../models/userModel");
 const categoryModel = require("../models/categoryModel");
 const courseModel = require("../models/courseModel");
+const sectionModel = require("../models/sectionModel")
+const subSectionModel = require("../models/subSectionModel")
 const { isValid, isValidName } = require("../utils/validator");
 const uploadToCloudinary = require("../utils/uploadCloudinary");
 const courseProgressModel = require("../models/courseProgressModel");
@@ -370,6 +372,58 @@ const getInstructorCourses = async (req, res) => {
   }
 };
 
+const deleteCourse = async (req,res)=>{
+  try {
+     const { courseId } = req.body
+     // Find the course
+    const course = await courseModel.findById(courseId)
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" })
+    }
+
+    // Unenroll students from the course
+    const studentsEnrolled = course.studentsEnrolled;
+    console.log(studentsEnrolled);
+    for(const studentId of studentsEnrolled){
+      await userModel.findByIdAndUpdate(studentId, {
+        $pull: { courses: courseId },
+      })
+    }
+
+    // Delete sections and sub-sections
+    const courseSections = course.courseContent;
+    for (const sectionId of courseSections) {
+      // Delete sub-sections of the section
+      const section = await sectionModel.findById(sectionId)
+      if (section) {
+        const subSections = section.subSection
+        for (const subSectionId of subSections) {
+          await subSectionModel.findByIdAndDelete(subSectionId)
+        }
+      }
+
+      // Delete the section
+      await sectionModel.findByIdAndDelete(sectionId)
+    }
+
+    // Delete the course
+    await courseModel.findByIdAndDelete(courseId)
+
+    return res.status(200).json({
+      success: true,
+      message: "Course deleted successfully",
+    })
+    
+  } catch (error) {
+     console.error(error)
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    })
+  }
+}
+
 module.exports = {
   createCourse,
   getAllCourses,
@@ -377,4 +431,5 @@ module.exports = {
   editCourse,
   getFullCourseDetails,
   getInstructorCourses,
+  deleteCourse
 };
