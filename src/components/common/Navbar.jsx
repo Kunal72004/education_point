@@ -21,20 +21,18 @@ const Navbar = () => {
     return matchPath(route, location?.pathname);
   };
 
-  
-
   useEffect(() => {
     (async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const res = await apiConnector("GET", categories.CATEGORIES_API)
-        setSubLinks(res.data.data)
+        const res = await apiConnector("GET", categories.CATEGORIES_API);
+        setSubLinks(res.data.data);
       } catch (error) {
-        console.log("Could not fetch Categories.", error)
+        console.log("Could not fetch Categories.", error);
       }
-      setLoading(false)
-    })()
-  }, [])
+      setLoading(false);
+    })();
+  }, []);
 
   console.log("subLinks", subLinks);
 
@@ -70,12 +68,10 @@ const Navbar = () => {
                         <div className="absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5"></div>
                         {loading ? (
                           <p>Loading...</p>
-                        ) : (subLinks && subLinks.length) ? (
+                        ) : subLinks && subLinks.length ? (
                           <>
                             {subLinks
-                              ?.filter(
-                                (subLink) => subLink?.course?.length > 0
-                              )
+                              ?.filter((subLink) => subLink?.course?.length > 0)
                               ?.map((subLink, i) => (
                                 <Link
                                   to={`/catalog/${subLink.name
@@ -89,7 +85,7 @@ const Navbar = () => {
                                 </Link>
                               ))}
                           </>
-                        ): (
+                        ) : (
                           <p className="text-center">No Courses Found</p>
                         )}
                       </div>

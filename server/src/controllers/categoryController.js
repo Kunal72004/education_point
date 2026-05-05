@@ -1,6 +1,10 @@
 const categoryModel = require("../models/categoryModel");
 const { isValid, isValidName } = require("../utils/validator");
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
 const createCategory = async (req, res) => {
   try {
     // data fetch req body
@@ -37,7 +41,11 @@ const getAllCategory = async (req, res) => {
     const allCategorys = await categoryModel.find({});
     return res
       .status(200)
-      .json({ success: true, msg: "getting all successfully",data:allCategorys });
+      .json({
+        success: true,
+        msg: "getting all successfully",
+        data: allCategorys,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -60,27 +68,62 @@ const categoryPageDetails = async (req, res) => {
     }
 
     //get course for specific category
-    const selectedCategory = await categoryModel
-      .findById(categoryId)
-      .populate("course")
+    const selectedCategory = await categoryModel.findById(categoryId)
+      .populate({
+        path: "course",
+        match: { status: "Published" },
+        populate: "ratingAndReviews",
+      })
       .exec();
 
     //validation
     if (!selectedCategory) {
       return res
         .status(404)
-        .json({ success: false, msg: "No course found for this category" });
+        .json({ success: false, msg: "Selected Category Not Found !" });
+    }
+
+    if (selectedCategory.course.length === 0) {
+      console.log("No courses found for the selected category.");
+      return res.status(404).json({
+        success: false,
+        message: "No courses found for the selected category.",
+      });
     }
 
     //get course for different category
-    const differentCategory = await categoryModel
-      .find({
-        _id: { $ne: categoryId },
+    const categoriesExceptSelected = await categoryModel.find({
+      _id: { $ne: categoryId },
+    });
+    let differentCategory = await categoryModel
+      .findOne(
+        categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]
+          ._id,
+      )
+      .populate({
+        path: "course",
+        match: { status: "Published" },
       })
-      .populate("course")
       .exec();
 
-    //get top 10 selling courses
+    //get top selling courses
+    const allCategories = await categoryModel
+      .find()
+      .populate({
+        path: "course",
+        match: { status: "Published" },
+        populate: {
+          path: "instructor",
+        },
+      })
+      .exec();
+
+    const allCourses = allCategories.flatMap((category) => category.course);
+    const mostSellingCourses = allCourses
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 10);
+
+    console.log("mostSellingCourses COURSE", mostSellingCourses)
 
     //return res
     return res.status(200).json({
@@ -89,6 +132,7 @@ const categoryPageDetails = async (req, res) => {
       data: {
         selectedCategory,
         differentCategory,
+        mostSellingCourses
       },
     });
   } catch (error) {
