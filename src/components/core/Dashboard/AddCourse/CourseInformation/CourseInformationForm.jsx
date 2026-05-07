@@ -39,7 +39,7 @@ export default function CourseInformationForm() {
       setLoading(true);
       const categories = await fetchCourseCategories();
       if (categories.length > 0) {
-        // console.log("categories", categories)
+        console.log("categories", categories)
         setCourseCategories(categories);
       }
       setLoading(false);

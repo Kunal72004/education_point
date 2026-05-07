@@ -2,38 +2,45 @@ import React from 'react'
 import "swiper/css"
 import "swiper/css/free-mode"
 import "swiper/css/pagination"
-import {Swiper, SwiperSlide} from 'swiper/react'
-import { Autoplay,FreeMode,Navigation, Pagination}  from 'swiper/modules'
+import "swiper/css/navigation"
+
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Autoplay, FreeMode, Navigation, Pagination } from 'swiper/modules'
 import CourseCard from './CourseCard'
 
-const CourseSlider = ({courses}) => {
-    console.log(courses);
-  return (
-    <>
-      {courses.length>0 ?(
-        <Swiper
-          slidesPerView={1}
-          spaceBetween={25}
-          loop={true}
-          modules={[FreeMode, Pagination]}
-          breakpoints={{
-            1024: {
-              slidesPerView: 3,
-            },
-          }}
-          className="max-h-[30rem]"
-        >
-          {courses?.map((course, i) => (
-            <SwiperSlide key={i}>
-              <CourseCard course={course} Height={"h-[250px]"} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      ):(
-        <p className="text-xl text-richblack-5">No Course Found</p>
-      )}
-    </>
-  )
-}
+const CourseSlider = ({ courses = [] }) => {
+  if (!courses.length) {
+    return <p>No Course Found</p>;
+  }
 
-export default CourseSlider
+  return (
+    <Swiper
+      slidesPerView={1}
+      spaceBetween={25}
+      loop={true}
+      autoplay={{
+        delay: 2000,
+        disableOnInteraction: false,
+      }}
+      navigation={true}
+      freeMode={true}
+      modules={[Autoplay, Navigation, Pagination, FreeMode]}
+      breakpoints={{
+        1024: {
+          slidesPerView: 3,
+        },
+      }}
+      className="w-full h-[300px]"
+    >
+      {courses.map((course, i) => (
+        <SwiperSlide key={i} className="flex justify-center">
+          <div className="w-full">
+            <CourseCard course={course} Height={"h-[250px]"} />
+          </div>
+        </SwiperSlide>
+      ))}
+    </Swiper>
+  );
+};
+
+export default CourseSlider;

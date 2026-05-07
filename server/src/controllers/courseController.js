@@ -168,13 +168,14 @@ const getCourseDetails = async (req, res) => {
     let { courseId } = req.body;
 
     //validate
-    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    if (!isValid(courseId)) {
       return res.status(400).json({ success: false, msg: "Invalid course id" });
     }
 
     //get course
-    const courseDetails = await courseModel
-      .findById(courseId)
+   const courseDetails = await courseModel.findOne({
+      _id: courseId,
+    })
       .populate({
         path: "instructor",
         populate: {
@@ -187,20 +188,36 @@ const getCourseDetails = async (req, res) => {
         path: "courseContent",
         populate: {
           path: "subSection",
+          select: "-videoUrl",
         },
       })
-      .exec();
+      .exec()
 
     if (!courseDetails) {
-      return res.status(400).json({ success: false, msg: "course Not found" });
+      return res.status(400).json({
+        success: false,
+        message: `Could not find course with id: ${courseId}`,
+      })
     }
 
+    let totalDurationInSeconds = 0
+    courseDetails.courseContent.forEach((content) => {
+      content.subSection.forEach((subSection) => {
+        const timeDurationInSeconds = parseInt(subSection.timeDuration)
+        totalDurationInSeconds += timeDurationInSeconds
+      })
+    })
+
     //return response
+   const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
+
     return res.status(200).json({
       success: true,
-      msg: "course detail fetched successfully",
-      data: courseDetails,
-    });
+      data: {
+        courseDetails,
+        totalDuration,
+      },
+    })
   } catch (error) {
     console.log(error);
     return res.status(500).json({

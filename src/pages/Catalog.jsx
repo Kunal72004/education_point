@@ -8,6 +8,7 @@ import { getCatalogaPageData } from "../services/operations/PageAndComponentData
 import CourseSlider from "../components/core/catalog/CourseSlider";
 import CourseCard from "../components/core/catalog/CourseCard";
 import Footer from '../components/common/Footer'
+
 const Catalog = () => {
   const { loading } = useSelector((state) => state.profile);
   const { catalogName } = useParams();
@@ -128,7 +129,7 @@ const Catalog = () => {
                 {catalogPageData?.data?.mostSellingCourses
                   ?.slice(0, 4)
                   .map((course, i) => (
-                    <CourseCard course={course} key={i} Height={"h-[400px]"} />
+                    <CourseCard course={course} key={i} Height={"h-[300px]"} />
                   ))}
               </div>
             </div>
