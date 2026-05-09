@@ -5,6 +5,7 @@ const courseProgressModel = require("../models/courseProgressModel");
 const { isValid } = require("../utils/validator");
 const uploadImageToCloudinary = require("../utils/uploadCloudinary");
 const mongoose = require("mongoose");
+const {convertSecondsToDuration} = require('../utils/secToDuration')
 
 const updateProfile = async (req, res) => {
   try {
@@ -233,6 +234,8 @@ const getEnrolledCourses = async (req, res) => {
       data: userDetails.courses,
     });
   } catch (error) {
+    console.log(error);
+    
     return res.status(500).json({
       success: false,
       message: error.message,

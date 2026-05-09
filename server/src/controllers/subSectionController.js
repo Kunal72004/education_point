@@ -23,6 +23,10 @@ const addSubsection = async (req, res) => {
       process.env.FOLDER_NAME,
     );
 
+    console.log("upload details",uploadDetails);
+    console.log("upload details duration",uploadDetails.duration);
+    
+
     //create subsection
     const subSectionDetails = await subSectionModel.create({
       title: title,
