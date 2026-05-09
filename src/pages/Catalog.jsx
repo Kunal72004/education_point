@@ -134,7 +134,6 @@ const Catalog = () => {
               </div>
             </div>
           </div>
-
           <Footer/>
     </>
   );

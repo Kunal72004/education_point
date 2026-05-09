@@ -13,6 +13,7 @@ import Footer from "../components/common/Footer";
 import ConfirmModal from '../components/common/ConfirmModal'
 import ReactMarkdown from 'react-markdown'
 import CourseAccordionBar from "../components/core/course/CourseAccordionBar";
+import { buyCourse } from "../services/operations/StudentFeatureApi";
 
 const CourseDetails = () => {
   const { user } = useSelector((state) => state.profile);
@@ -95,7 +96,20 @@ const CourseDetails = () => {
     createdAt,
   } = response?.data?.courseDetails;
 
-  const handleBuyCourse = () => {};
+  const handleBuyCourse = () => {
+    if(token){
+      buyCourse(token, [courseId], user, navigate, dispatch)
+      return 
+    }
+    setConfirmationModal({
+      text1: "You are not logged in!",
+      text2: "Please login to Purchase Course.",
+      btn1Text: "Login",
+      btn2Text: "Cancel",
+      btn1Handler: () => navigate("/login"),
+      btn2Handler: () => setConfirmationModal(null),
+    })
+  };
 
   return (
     <>
