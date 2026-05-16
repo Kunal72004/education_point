@@ -18,16 +18,18 @@ import EnrolledCourses from "./components/core/Dashboard/EnrolledCourses";
 import { useSelector } from "react-redux";
 import { ACCOUNT_TYPE } from "./utils/constants";
 import Cart from "./components/core/Dashboard/Cart/Index";
-import Error from './pages/Error'
+import Error from "./pages/Error";
 import AddCourse from "./components/core/Dashboard/AddCourse";
 import MyCourses from "./components/core/Dashboard/MyCourses";
 import EditCourse from "./components/core/Dashboard/EditCourse";
 import Catalog from "./pages/Catalog";
 import CourseDetails from "./pages/CourseDetails";
+import ViewCourse from "./pages/ViewCourse";
+import VideoDetails from "./components/core/Dashboard/ViewCourse/videoDetails";
 
 function App() {
   const { user } = useSelector((state) => state.profile);
-  
+
   return (
     <div className="w-screen min-h-screen bg-richblack-900 flex flex-col font-inter">
       <Navbar />
@@ -93,22 +95,38 @@ function App() {
                 path="dashboard/enrolled-courses"
                 element={<EnrolledCourses />}
               />
-              <Route path="dashboard/cart" element={<Cart/>}/>
+              <Route path="dashboard/cart" element={<Cart />} />
             </>
           )}
 
           {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
             <>
-            <Route path="dashboard/add-course" element={<AddCourse/>}/>
-            <Route path="dashboard/my-courses" element={<MyCourses/>}/>
-            <Route
+              <Route path="dashboard/add-course" element={<AddCourse />} />
+              <Route path="dashboard/my-courses" element={<MyCourses />} />
+              <Route
                 path="dashboard/edit-course/:courseId"
                 element={<EditCourse />}
               />
             </>
           )}
         </Route>
-         <Route path="*" element={<Error />} />
+        <Route
+          element={
+            <PrivateRoute>
+              <ViewCourse />
+            </PrivateRoute>
+          }
+        >
+          {user?.accountType === ACCOUNT_TYPE.STUDENT && (
+            <>
+              <Route
+                path="view-course/:courseId/section/:sectionId/sub-section/:subSectionId"
+                element={<VideoDetails />}
+              />
+            </>
+          )}
+        </Route>
+        <Route path="*" element={<Error />} />
       </Routes>
     </div>
   );
