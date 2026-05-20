@@ -39,6 +39,8 @@ const {
   getAllRating,
 } = require("../controllers/ratingReviewController");
 
+const {updateCourseProgress} = require("../controllers/CourseProgressController")
+
 //course Route
 
 //course created (only Instructor)
@@ -72,6 +74,8 @@ router.post("/getFullCourseDetails", authentication, getFullCourseDetails)
 router.put("/editCourse", authentication, isInstructor, editCourse);
 // Get all Courses Under a Specific Instructor
 router.get("/getInstructorCourses", authentication, isInstructor, getInstructorCourses)
+
+router.post("/updateCourseProgress", authentication, isStudent, updateCourseProgress);
 
 //category Routes
 

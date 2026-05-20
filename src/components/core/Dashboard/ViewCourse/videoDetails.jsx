@@ -4,6 +4,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import IconBtn from "../../../common/IconBtn";
 import { BigPlayButton, Player } from "video-react";
 import "video-react/dist/video-react.css"
+import { markLectureAsComplete } from "../../../../services/operations/courseDetailsApi";
+import { updateCompletedLectures } from "../../../../slices/viewCourseSlice";
 
 const VideoDetails = () => {
   const { courseId, sectionId, subSectionId } = useParams()
@@ -153,13 +155,13 @@ const VideoDetails = () => {
 
   const handleLectureCompletion = async () => {
     setLoading(true)
-    // const res = await markLectureAsComplete(
-    //   { courseId: courseId, subsectionId: subSectionId },
-    //   token
-    // )
-    // if (res) {
-    //   dispatch(updateCompletedLectures(subSectionId))
-    // }
+    const res = await markLectureAsComplete(
+      { courseId: courseId, subsectionId: subSectionId },
+      token
+    )
+    if (res) {
+      dispatch(updateCompletedLectures(subSectionId))
+    }
     setLoading(false)
   }
   return(

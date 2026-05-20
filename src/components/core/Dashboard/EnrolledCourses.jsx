@@ -10,7 +10,10 @@ const EnrolledCourses = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const getEnrolledCourses = async () => {
+  
+
+  useEffect(()=>{
+    ;(async () => {
     try {
       const res = await dispatch(getUserEnrolledCourses(token));
       console.log("res : ",res);
@@ -23,10 +26,7 @@ const EnrolledCourses = () => {
       console.log(error);
       console.log("Could not fetch enrolled courses.")
     }
-  };
-
-  useEffect(()=>{
-    getEnrolledCourses();
+  })()
   },[])
   return (
     <>
