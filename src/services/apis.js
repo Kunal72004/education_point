@@ -14,6 +14,11 @@ export const categories = {
   CATEGORIES_API: BASE_URL + "/course/showAllCategories",
 };
 
+// RATINGS AND REVIEWS
+export const ratingsEndpoints = {
+  REVIEWS_DETAILS_API: BASE_URL + "/course/getReviews",
+}
+
 // CATALOG PAGE DATA
 export const catalogData = {
   CATALOGPAGEDATA_API: BASE_URL + "/course/getCategoryPageDetails",

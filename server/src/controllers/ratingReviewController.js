@@ -2,40 +2,41 @@ const ratingReviewModel = require("../models/ratingAndReviewModel");
 const courseModel = require("../models/courseModel");
 const mongoose = require("mongoose");
 
-//create rating and review
 exports.createRating = async (req, res) => {
   try {
-    // user id
-    let userId = req.user.id;
+    const userId = req.user.id;
 
-    //fetch data form body
-    let { rating, review, courseId } = req.body;
+    const { rating, review, courseId } = req.body;
 
-    //check if user is enrollerd or not
+    // Check enrollment
     const courseDetails = await courseModel.findOne({
       _id: courseId,
-      studentsEnrolled: { $in: [userId] },
+      studentsEnrolled: userId,
     });
+
     if (!courseDetails) {
-      return res
-        .status(404)
-        .json({ success: true, msg: "student is not enrolled in the course" });
+      return res.status(404).json({
+        success: false,
+        msg: "Student is not enrolled in the course",
+      });
     }
 
-    //check if user already reviewed the course
+    // Check already reviewed
     const alreadyReviewed = await ratingReviewModel.findOne({
       user: userId,
       course: courseId,
     });
 
+    // console.log("alreadyReviewed :", alreadyReviewed);
+
     if (alreadyReviewed) {
       return res.status(403).json({
         success: false,
-        msg: "course is already reviewed by the user",
+        message: "Course already reviewed by user",
       });
     }
 
-    //create rating and review
+    // Create review
     const ratingReview = await ratingReviewModel.create({
       rating,
       review,
@@ -43,29 +44,28 @@ exports.createRating = async (req, res) => {
       user: userId,
     });
 
-    //update course with rating and review
+    // Update course
     await courseModel.findByIdAndUpdate(
-      { courseId },
+      courseId,
       {
         $push: {
           ratingAndReviews: ratingReview._id,
         },
       },
-      { new: true },
+      { new: true }
     );
-    console.log(courseDetails);
 
-    //return response
     return res.status(200).json({
       success: true,
-      msg: "rating and review created successfully",
+      msg: "Rating and review created successfully",
       ratingReview,
     });
   } catch (error) {
     console.log(error);
+
     return res.status(500).json({
       success: false,
-      msg: "something went wrong, while creating review",
+      msg: "Something went wrong while creating review",
     });
   }
 };
