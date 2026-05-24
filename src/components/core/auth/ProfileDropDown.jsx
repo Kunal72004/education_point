@@ -4,6 +4,7 @@ import { VscDashboard, VscSignOut } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../../services/operations/authapi";
+import useOnClickOutside from "../../../assets/hooks/useOnClickOutside";
 
 const ProfileDropDown = () => {
   const { user } = useSelector((state) => state.profile);
@@ -12,11 +13,10 @@ const ProfileDropDown = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
+  
+  useOnClickOutside(ref, () => setOpen(false)) 
+  
   if (!user) return null;
-
-
-  // abhi isme drop down ke bahar click kerne per drop down hat jaye wo wala kam rhe gaya 
 
   return (
     <button className="relative" onClick={() => setOpen(true)}>
