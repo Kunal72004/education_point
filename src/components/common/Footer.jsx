@@ -1,5 +1,5 @@
 import React from "react";
-import Logo from "../../assets/Logo/Logo-Full-Light.png";
+import Logo from "../../assets/Logo/main_logo_Img.png";
 import { FooterLink2 } from "../../data/footer-links";
 
 import { Link } from "react-router-dom";
@@ -161,7 +161,7 @@ const Footer = () => {
           </div>
 
           <div className="text-center">
-            Made with ❤️ CodeHelp © 2023 Studynotion
+            Made with ❤️ Kunal_sikarwar © 2026 EducationPoint
           </div>
         </div>
       </div>
