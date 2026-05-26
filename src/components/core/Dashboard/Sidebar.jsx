@@ -1,46 +1,105 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { sidebarLinks } from "../../../data/dashboard-links";
-import SidebarLinks from "./SidebarLinks";
-import { VscSignOut } from "react-icons/vsc";
-import {logout} from '../../../services/operations/authapi'
-import { useNavigate } from "react-router-dom";
-import ConfirmModal from "../../common/ConfirmModal";
-
+import React, { useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { sidebarLinks } from "../../../data/dashboard-links"
+import SidebarLinks from "./SidebarLinks"
+import { VscSignOut, VscMenu } from "react-icons/vsc"
+import { RxCross2 } from "react-icons/rx"
+import { logout } from "../../../services/operations/authapi"
+import ConfirmModal from "../../common/ConfirmModal"
 
 const Sidebar = () => {
-  const { loading: authLoading } = useSelector((state) => state.auth);
+  const { loading: authLoading } = useSelector((state) => state.auth)
+
   const { loading: profileLoading, user } = useSelector(
-    (state) => state.profile,
-  );
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [confirmationModal, setConfirmationModal] = useState(null);
+    (state) => state.profile
+  )
+
+  const dispatch = useDispatch()
+
+  const [confirmationModal, setConfirmationModal] = useState(null)
+
+  const [openSidebar, setOpenSidebar] = useState(false)
 
   if (profileLoading || authLoading) {
     return (
       <div className="grid min-h-[calc(100vh-3.5rem)] place-items-center">
         <div className="spinner"></div>
       </div>
-    );
+    )
   }
+
   return (
     <>
-      <div className="flex h-[calc(100vh-3.5rem)] min-w-[220px] flex-col border-r-[1px] border-r-richblack-700 bg-richblack-800 py-10">
-        <div className="flex flex-col">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setOpenSidebar(true)}
+        className="absolute right-4 top-4 z-[1000] rounded-md bg-richblack-800 p-2 text-white lg:hidden"
+      >
+        <VscMenu className="text-2xl" />
+      </button>
+
+      {/* Overlay */}
+      {openSidebar && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/50 lg:hidden"
+          onClick={() => setOpenSidebar(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`
+          fixed lg:static
+          left-0 top-0 z-[1000]
+          flex h-screen w-[250px]
+          flex-col border-r border-richblack-700
+          bg-richblack-800 py-10
+          transition-all duration-300
+
+          ${
+            openSidebar
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }
+        `}
+      >
+        {/* Close Button Mobile */}
+        <button
+          onClick={() => setOpenSidebar(false)}
+          className="absolute right-4 top-4 text-white lg:hidden"
+        >
+          <RxCross2 className="text-2xl" />
+        </button>
+
+        {/* Links */}
+        <div className="mt-8 flex flex-col">
           {sidebarLinks.map((link) => {
-            if (link?.type && user?.accountType !== link?.type) return null;
+            if (link?.type && user?.accountType !== link?.type)
+              return null
+
             return (
-              <SidebarLinks key={link?.id} link={link} iconName={link?.icon} />
-            );
+              <SidebarLinks
+                key={link?.id}
+                link={link}
+                iconName={link?.icon}
+              />
+            )
           })}
         </div>
-        <div className="mx-auto mt-6 mb-6 h-[1px] w-10/12 bg-richblack-700" />
+
+        {/* Divider */}
+        <div className="mx-auto my-6 h-[1px] w-10/12 bg-richblack-700" />
+
+        {/* Bottom Links */}
         <div className="flex flex-col">
           <SidebarLinks
-            link={{ name: "Settings", path: "/dashboard/settings" }}
+            link={{
+              name: "Settings",
+              path: "/dashboard/settings",
+            }}
             iconName="VscSettingsGear"
           />
+
           <button
             onClick={() =>
               setConfirmationModal({
@@ -48,11 +107,11 @@ const Sidebar = () => {
                 text2: "You will be logged out of your account.",
                 btn1Text: "Logout",
                 btn2Text: "Cancel",
-                btn1Handler: ()=>dispatch(logout()),
-                btn2Handler:()=>setConfirmationModal(null),
+                btn1Handler: () => dispatch(logout()),
+                btn2Handler: () => setConfirmationModal(null),
               })
             }
-            className="text-richblack-300 font-medium px-8 py-2 text-sm"
+            className="px-8 py-2 text-left text-sm font-medium text-richblack-300"
           >
             <div className="flex items-center gap-x-2">
               <VscSignOut className="text-lg" />
@@ -61,9 +120,13 @@ const Sidebar = () => {
           </button>
         </div>
       </div>
-      {confirmationModal && <ConfirmModal modalData={confirmationModal} />}
-    </>
-  );
-};
 
-export default Sidebar;
+      {/* Modal */}
+      {confirmationModal && (
+        <ConfirmModal modalData={confirmationModal} />
+      )}
+    </>
+  )
+}
+
+export default Sidebar

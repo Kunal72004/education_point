@@ -6,8 +6,9 @@ import { useSelector } from "react-redux";
 import { apiConnector } from "../../services/apiConnector";
 import { categories } from "../../services/apis";
 import { BsChevronDown } from "react-icons/bs";
-import { AiOutlineShoppingCart } from "react-icons/ai";
+import { AiOutlineMenu, AiOutlineShoppingCart } from "react-icons/ai";
 import ProfileDropDown from "../core/auth/ProfileDropDown";
+import { ACCOUNT_TYPE } from "../../utils/constants";
 
 const Navbar = () => {
   const location = useLocation();
@@ -109,10 +110,10 @@ const Navbar = () => {
           </ul>
         </nav>
 
-        {/* Login / Signup / Dashboard {ye wale mai thoda changes kerna hai} */}
-        <div className="md:flex hidden items-center gap-x-4">
-          {user && user?.accountType !== "Instructor" && (
-            <Link to={"/dashboard/cart"} className="relative">
+        {/* Login / Signup / Dashboard */}
+        <div className="hidden items-center gap-x-4 md:flex">
+          {user && user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR && (
+            <Link to="/dashboard/cart" className="relative">
               <AiOutlineShoppingCart className="text-2xl text-richblack-100" />
               {totalItems > 0 && (
                 <span className="absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center overflow-hidden rounded-full bg-richblack-600 text-center text-xs font-bold text-yellow-100">
@@ -122,20 +123,37 @@ const Navbar = () => {
             </Link>
           )}
           {token === null && (
-            <Link to={"/login"}>
-              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[6px] text-richblack-100">
+            <Link to="/login">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100">
                 Log in
               </button>
             </Link>
           )}
           {token === null && (
             <Link to="/signup">
-              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[6px] text-richblack-100">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[12px] py-[8px] text-richblack-100">
                 Sign up
               </button>
             </Link>
           )}
-          {token !== null && <ProfileDropDown />}
+          {token !== null && <ProfileDropDown/>}
+        </div>
+        <div className="mr-4 md:hidden">
+          {token === null && 
+          <div  className="flex gap-3">
+            <Link to="/login">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[10px] py-[6px] text-richblack-100">
+                Log in
+              </button>
+            </Link>
+            <Link to="/signup">
+              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[10px] py-[6px] text-richblack-100">
+                Sign up
+              </button>
+            </Link>
+          </div>
+          }
+          
         </div>
       </div>
     </div>
