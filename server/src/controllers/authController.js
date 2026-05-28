@@ -250,7 +250,7 @@ const changePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
 
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
+    if (!isValid(userId)) {
       return res.status(400).json({ success: false, msg: "Invalid user id" });
     }
 

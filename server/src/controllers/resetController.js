@@ -1,7 +1,11 @@
 const userModel = require("../models/userModel");
 const sendMail = require("../utils/sendMail");
-const { isValid, isValidEmail, isValidPassword } = require("../utils/validator");
-const bcrypt = require('bcrypt')
+const {
+  isValid,
+  isValidEmail,
+  isValidPassword,
+} = require("../utils/validator");
+const bcrypt = require("bcrypt");
 // reset token (send mail)
 const resetPasswordToken = async (req, res) => {
   try {
@@ -49,62 +53,83 @@ const resetPasswordToken = async (req, res) => {
       .json({ success: true, msg: "user email sent successfully" });
   } catch (error) {
     console.log(error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        msg: "something went wrong while sending reset password email",
-      });
+    return res.status(500).json({
+      success: false,
+      msg: "something went wrong while sending reset password email",
+    });
   }
 };
 
 // reset password
-const resetPassword = async(req,res)=>{
-    try {
-      //data fetch 
-      let {password,confirmPassword,token} = req.body;
+const resetPassword = async (req, res) => {
+  try {
+    //data fetch
+    let { password, confirmPassword, token } = req.body;
 
-      console.log(password,confirmPassword,token);
+    console.log(password, confirmPassword, token);
 
-      if(!isValidPassword(password)){
-        return res.status(400).json({success:false,msg:"invalid or required password"});
-      }
-
-      if(!isValid(token)){
-        return res.status(400).json({success:false, msg:"invalid token"})
-      }
-
-      //check password or confirm password match or not 
-      if(password !== confirmPassword){
-        return res.status(400).json({
-          success:false,
-          msg:"password or confirm password is not match"
-        })
-      }
-
-      //get user form db using token
-      const userDetails = await userModel.findOne({token:token});
-      if(!userDetails){
-        return res.status(404).json({success:false, msg:"invalid token"})
-      }
-      if(userDetails.resetPasswordExpires < Date.now()){
-        return res.status(400).json({success:false,msg:"Token is expired, please regenerate your token"});
-      }
-
-      //hash password
-      const hashPassword = await bcrypt.hash(password,10);
-      
-      //update new hash password in db
-      let updatePasswordUser = await userModel.findOneAndUpdate({token:token},{password:hashPassword},{new:true});
-
-      //send res
-      return res.status(200).json({success:true,msg:"password reset successfully"})
-        
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({success:false,msg:"something went wrong ,while reseting password"});
-        
-    }
+    if (!password || password.length < 6) {
+  return res.status(400).json({
+    success: false,
+    msg: "Password must be at least 6 characters",
+  })
 }
 
-module.exports = {resetPasswordToken,resetPassword};
+if (!token) {
+  return res.status(400).json({
+    success: false,
+    msg: "Token is missing",
+  })
+}
+
+if (password !== confirmPassword) {
+  return res.status(400).json({
+    success: false,
+    msg: "Passwords do not match",
+  })
+}
+
+    //get user form db using token
+    const userDetails = await userModel.findOne({ token: token });
+    if (!userDetails) {
+      return res.status(404).json({ success: false, msg: "invalid token" });
+    }
+    if (userDetails.resetPasswordExpires < Date.now()) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          msg: "Token is expired, please regenerate your token",
+        });
+    }
+
+    //hash password
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    //update new hash password in db
+    await userModel.findOneAndUpdate(
+      { token },
+      {
+        password: hashPassword,
+        token: undefined,
+        resetPasswordExpires: undefined,
+      },
+      { new: true },
+    );
+
+    //send res
+    return res
+      .status(200)
+      .json({ success: true, msg: "password reset successfully" });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({
+        success: false,
+        msg: "something went wrong ,while reseting password",
+      });
+  }
+};
+
+module.exports = { resetPasswordToken, resetPassword };

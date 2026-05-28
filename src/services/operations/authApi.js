@@ -159,7 +159,7 @@ export function resetPassword(password, confirmPassword, token, navigate) {
       toast.success("Password has been reset successfully");
       navigate("/login");
     } catch (error) {
-      console.log("RESET PASSWORD TOKEN Error", error);
+      console.log("RESET PASSWORD TOKEN Error", error.response?.data || error);
       toast.error("Unable to reset password");
     }
     dispatch(setLoading(false));
