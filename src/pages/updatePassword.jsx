@@ -3,7 +3,7 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"
 import { BiArrowBack } from "react-icons/bi"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { resetPassword } from "../services/operations/authapi"
+import { resetPassword } from "../services/operations/authApi"
 const UpdatePassword = () => {
     const navigate = useNavigate()
   const dispatch = useDispatch()

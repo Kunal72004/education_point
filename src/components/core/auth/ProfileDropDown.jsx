@@ -3,7 +3,7 @@ import { AiOutlineCaretDown } from "react-icons/ai";
 import { VscDashboard, VscSignOut } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { logout } from "../../../services/operations/authapi";
+import { logout } from "../../../services/operations/authApi";
 import useOnClickOutside from "../../../assets/hooks/useOnClickOutside";
 
 const ProfileDropDown = () => {
