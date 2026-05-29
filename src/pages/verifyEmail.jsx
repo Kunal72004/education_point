@@ -4,7 +4,7 @@ import { RxCountdownTimer } from "react-icons/rx";
 import OTPInput from "react-otp-input";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { sendOtp, signUp } from "../services/operations/authApi";
+import { sendOtp, signUp } from "../services/operations/temp.js";
 
 const VerifyEmail = () => {
   const { loading, signupData } = useSelector((state) => state.auth);

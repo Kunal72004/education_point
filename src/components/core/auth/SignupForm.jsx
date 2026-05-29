@@ -6,7 +6,7 @@ import Tab from "../../common/Tab";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import toast from "react-hot-toast";
 import { setSignupData } from "../../../slices/authSlice";
-import { sendOtp } from "../../../services/operations/authApi";
+import { sendOtp } from "../../../services/operations/temp.js";
 
 const SignupForm = () => {
   

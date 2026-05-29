@@ -4,7 +4,7 @@ import { sidebarLinks } from "../../../data/dashboard-links"
 import SidebarLinks from "./SidebarLinks"
 import { VscSignOut, VscMenu } from "react-icons/vsc"
 import { RxCross2 } from "react-icons/rx"
-import { logout } from "../../../services/operations/authApi"
+import { logout } from "../../../services/operations/temp.js"
 import ConfirmModal from "../../common/ConfirmModal"
 
 const Sidebar = () => {
