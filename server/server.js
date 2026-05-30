@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://education-point-ten.vercel.app",
     credentials: true,
   }),
 );
