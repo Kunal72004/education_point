@@ -136,24 +136,24 @@ const Navbar = () => {
               </button>
             </Link>
           )}
-          {token !== null && <ProfileDropDown/>}
+          {token !== null && <ProfileDropDown />}
         </div>
-        <div className="mr-4 md:hidden">
-          {token === null && 
-          <div  className="flex gap-3">
-            <Link to="/login">
-              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[10px] py-[6px] text-richblack-100">
-                Log in
-              </button>
-            </Link>
-            <Link to="/signup">
-              <button className="rounded-[8px] border border-richblack-700 bg-richblack-800 px-[10px] py-[6px] text-richblack-100">
-                Sign up
-              </button>
-            </Link>
-          </div>
-          }
-          
+        <div className="md:hidden">
+          {token === null && (
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <Link to="/login">
+                <button className="whitespace-nowrap rounded-md border border-richblack-700 px-3 py-2 text-sm text-richblack-100">
+                  Login
+                </button>
+              </Link>
+
+              <Link to="/signup">
+                <button className="whitespace-nowrap rounded-md bg-yellow-50 px-3 py-2 text-sm font-medium text-richblack-900">
+                  Sign Up
+                </button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
