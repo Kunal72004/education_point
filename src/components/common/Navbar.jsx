@@ -9,6 +9,7 @@ import { BsChevronDown } from "react-icons/bs";
 import { AiOutlineMenu, AiOutlineShoppingCart } from "react-icons/ai";
 import ProfileDropDown from "../core/auth/ProfileDropDown";
 import { ACCOUNT_TYPE } from "../../utils/constants";
+import { RxCross2 } from "react-icons/rx";
 
 const Navbar = () => {
   const location = useLocation();
@@ -17,6 +18,8 @@ const Navbar = () => {
   const { totalItems } = useSelector((state) => state.cart);
   const [subLinks, setSubLinks] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const [openMenu, setOpenMenu] = useState(false);
 
   const matchRoute = (route) => {
     return matchPath(route, location?.pathname);
@@ -138,9 +141,9 @@ const Navbar = () => {
           )}
           {token !== null && <ProfileDropDown />}
         </div>
-        <div className="md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
           {token === null && (
-            <div className="flex items-center gap-2 whitespace-nowrap">
+            <>
               <Link to="/login">
                 <button className="whitespace-nowrap rounded-md border border-richblack-700 px-3 py-2 text-sm text-richblack-100">
                   Login
@@ -152,11 +155,104 @@ const Navbar = () => {
                   Sign Up
                 </button>
               </Link>
-            </div>
+            </>
           )}
+
+          {token !== null && user?.accountType !== ACCOUNT_TYPE.INSTRUCTOR && (
+            <Link to="/dashboard/cart" className="relative">
+              <AiOutlineShoppingCart className="text-2xl text-richblack-100" />
+              {totalItems > 0 && (
+                <span className="absolute -bottom-2 -right-2 grid h-5 w-5 place-items-center rounded-full bg-richblack-600 text-xs font-bold text-yellow-100">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+          )}
+
+          {token !== null && <ProfileDropDown />}
+
+          <button
+            onClick={() => setOpenMenu(true)}
+            className="text-richblack-5"
+          >
+            <AiOutlineMenu className="text-3xl" />
+          </button>
+        </div>
+      </div>
+      {/* Overlay */}
+      {openMenu && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/50 md:hidden"
+          onClick={() => setOpenMenu(false)}
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <div
+        className={`fixed top-0 right-0 z-[1000] h-screen w-[280px]
+        border-l border-richblack-700 bg-richblack-800
+        transition-all duration-300 md:hidden
+        ${openMenu ? "translate-x-0" : "translate-x-full"}`}
+      >
+        <button
+          onClick={() => setOpenMenu(false)}
+          className="absolute right-4 top-4 text-richblack-5"
+        >
+          <RxCross2 className="text-3xl" />
+        </button>
+
+        <div className="mt-20 flex flex-col gap-6 px-6">
+          <Link
+          to="/home"
+          onClick={() => setOpenMenu(false)}
+          className="text-lg text-richblack-5"
+        >
+          Home
+        </Link>
+          <Link
+            to="/about"
+            onClick={() => setOpenMenu(false)}
+            className="text-lg text-richblack-5"
+          >
+            About Us
+          </Link>
+
+          <Link
+            to="/contact"
+            onClick={() => setOpenMenu(false)}
+            className="text-lg text-richblack-5"
+          >
+            Contact Us
+          </Link>
+
+          <div>
+            <p className="mb-3 text-lg text-richblack-5">
+              Catalog
+            </p>
+
+            <div className="flex flex-col gap-2 pl-4">
+              {subLinks
+                ?.filter((subLink) => subLink?.course?.length > 0)
+                ?.map((subLink, index) => (
+                  <Link
+                    key={index}
+                    to={`/catalog/${subLink.name
+                      .split(" ")
+                      .join("-")
+                      .toLowerCase()}`}
+                    onClick={() => setOpenMenu(false)}
+                    className="text-richblack-300"
+                  >
+                    {subLink.name}
+                  </Link>
+                ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
+    
+    
   );
 };
 
