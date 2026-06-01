@@ -6,9 +6,11 @@ import { VscSignOut, VscMenu } from "react-icons/vsc"
 import { RxCross2 } from "react-icons/rx"
 import { logout } from "../../../services/operations/authApi"
 import ConfirmModal from "../../common/ConfirmModal"
+import { useNavigate } from "react-router-dom"
 
 const Sidebar = () => {
   const { loading: authLoading } = useSelector((state) => state.auth)
+  const navigate = useNavigate();
 
   const { loading: profileLoading, user } = useSelector(
     (state) => state.profile
@@ -107,7 +109,7 @@ const Sidebar = () => {
                 text2: "You will be logged out of your account.",
                 btn1Text: "Logout",
                 btn2Text: "Cancel",
-                btn1Handler: () => dispatch(logout()),
+                btn1Handler: () => dispatch(logout(navigate)),
                 btn2Handler: () => setConfirmationModal(null),
               })
             }
